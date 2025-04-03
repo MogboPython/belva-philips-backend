@@ -15,7 +15,7 @@ func Config(key string) string {
 		env = "development"
 	}
 
-	envFile := "../../.env." + env
+	envFile := ".env." + env
 
 	err := godotenv.Load(envFile)
 	if err != nil {

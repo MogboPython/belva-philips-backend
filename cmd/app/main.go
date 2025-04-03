@@ -11,7 +11,6 @@ import (
 	"github.com/MogboPython/belvaphilips_backend/internal/router"
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 
-	// "github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -25,7 +24,11 @@ import (
 // @BasePath /
 func main() {
 	app := fiber.New()
-	app.Use(logger.New())
+	app.Use(logger.New(logger.Config{
+		Format:     "${cyan}[${time}] ${white}${pid} ${red}${status} ${blue}[${method}] ${white}${path}\n",
+		TimeFormat: "02-Jan-2006",
+		TimeZone:   "UTC",
+	}))
 	app.Use(cors.New())
 
 	database.ConnectDB()

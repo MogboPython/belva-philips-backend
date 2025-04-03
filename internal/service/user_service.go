@@ -2,6 +2,9 @@ package service
 
 import (
 	"errors"
+	"fmt"
+	"log"
+	"strconv"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
@@ -10,8 +13,8 @@ import (
 // UserService interface defines methods for user business logic
 type UserService interface {
 	CreateUser(req *model.CreateUserRequest) (*model.UserResponse, error)
-	// GetUserByID(id int64) (*model.UserResponse, error)
-	// GetAllUsers() ([]*model.UserResponse, error)
+	GetUserByID(id string) (*model.UserResponse, error)
+	GetAllUsers(page, limit string) ([]*model.UserResponse, error)
 	// UpdateUser(id int64, req *model.UpdateUserRequest) (*model.UserResponse, error)
 	// DeleteUser(id int64) error
 }
@@ -44,6 +47,7 @@ func (s *userService) CreateUser(req *model.CreateUserRequest) (*model.UserRespo
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
+		log.Printf("error saving user: %v", err)
 		return nil, err
 	}
 
@@ -51,29 +55,42 @@ func (s *userService) CreateUser(req *model.CreateUserRequest) (*model.UserRespo
 }
 
 // GetUserByID retrieves a user by ID
-// func (s *userService) GetUserByID(id int64) (*model.UserResponse, error) {
-// 	user, err := s.userRepo.GetByID(id)
-// 	if err != nil {
-// 		return nil, err
-// 	}
-
-// 	return mapUserToResponse(user), nil
-// }
+func (s *userService) GetUserByID(id string) (*model.UserResponse, error) {
+	user, err := s.userRepo.GetByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find user: %w", err)
+	}
+	return mapUserToResponse(user), nil
+}
 
 // GetAllUsers retrieves all users
-// func (s *userService) GetAllUsers() ([]*model.UserResponse, error) {
-// 	users, err := s.userRepo.GetAll()
-// 	if err != nil {
-// 		return nil, err
-// 	}
+func (s *userService) GetAllUsers(pageStr, limitStr string) ([]*model.UserResponse, error) {
+	// Convert to integers
+	page, err := strconv.Atoi(pageStr)
+	if err != nil || page < 1 {
+		page = 1
+	}
 
-// 	var userResponses []*model.UserResponse
-// 	for _, user := range users {
-// 		userResponses = append(userResponses, mapUserToResponse(user))
-// 	}
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil || limit < 1 {
+		limit = 10
+	}
 
-// 	return userResponses, nil
-// }
+	// Calculate offset
+	offset := (page - 1) * limit
+
+	users, err := s.userRepo.GetAll(offset, limit)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get users: %w", err)
+	}
+
+	var userResponses []*model.UserResponse
+	for _, user := range users {
+		userResponses = append(userResponses, mapUserToResponse(user))
+	}
+
+	return userResponses, nil
+}
 
 // UpdateUser updates an existing user
 // func (s *userService) UpdateUser(id int64, req *model.UpdateUserRequest) (*model.UserResponse, error) {

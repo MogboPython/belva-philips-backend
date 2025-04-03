@@ -1,10 +1,6 @@
 package repository
 
 import (
-	_ "errors"
-	_ "fmt"
-	_ "time"
-
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"gorm.io/gorm"
 )
@@ -12,8 +8,8 @@ import (
 // UserRepository interface defines methods for user data access
 type UserRepository interface {
 	Create(user *model.User) error
-	// GetByID(id int64) (*model.User, error)
-	// GetAll() ([]*model.User, error)
+	GetByID(id string) (*model.User, error)
+	GetAll(page, limit int) ([]*model.User, error)
 	// Update(id int64, user *model.User) error
 	// Delete(id int64) error
 }
@@ -32,41 +28,34 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 
 // Create inserts a new user into the database
 func (r *userRepository) Create(user *model.User) error {
-	result := r.db.Create(&user)
-	return result.Error
+	err := r.db.Create(&user).Error
+	// if errors.Is(err, gorm.ErrDuplicatedKey) {
+	// 	return fmt.Errorf("user with this email exists: %w", err)
+	// }
+	return err
 }
 
 // GetByID retrieves a user by ID
-// func (r *userRepository) GetByID(id int64) (*model.User, error) {
-// 	query := `
-// 		SELECT id, username, email, phone, created_at, updated_at
-// 		FROM users
-// 		WHERE id = $1`
+func (r *userRepository) GetByID(id string) (*model.User, error) {
+	var user model.User
 
-// 	var user model.User
-// 	err := r.db.Get(&user, query, id)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to get user: %w", err)
-// 	}
+	if err := r.db.First(&user, "id = ?", id).Error; err != nil {
+		return nil, err
+	}
 
-// 	return &user, nil
-// }
+	return &user, nil
+}
 
 // GetAll retrieves all users
-// func (r *userRepository) GetAll() ([]*model.User, error) {
-// 	query := `
-// 		SELECT id, username, email, phone, created_at, updated_at
-// 		FROM users
-// 		ORDER BY id`
+func (r *userRepository) GetAll(offset, limit int) ([]*model.User, error) {
+	var users []*model.User
 
-// 	var users []*model.User
-// 	err := r.db.Select(&users, query)
-// 	if err != nil {
-// 		return nil, fmt.Errorf("failed to get users: %w", err)
-// 	}
+	if err := r.db.Offset(offset).Limit(limit).Find(&users).Error; err != nil {
+		return nil, err
+	}
 
-// 	return users, nil
-// }
+	return users, nil
+}
 
 // Update updates an existing user
 // func (r *userRepository) Update(id int64, user *model.User) error {

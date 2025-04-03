@@ -1,4 +1,18 @@
 basePath: /
+definitions:
+  handler.ResponseHTTP:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  model.TokenRequestPayload:
+    properties:
+      sessionId:
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -6,5 +20,42 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Belva Philips Backend API
   version: "1.0"
-paths: {}
+paths:
+  /api/v1/user/token:
+    post:
+      consumes:
+      - application/json
+      description: Create a new authorization token with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.TokenRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.ResponseHTTP'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            type: string
+      summary: Create a authorization token
+      tags:
+      - users
 swagger: "2.0"
