@@ -46,6 +46,18 @@ func (r *userRepository) GetByID(id string) (*model.User, error) {
 	return &user, nil
 }
 
+// func getUserByEmail(e string) (*model.User, error) {
+// 	db := database.DB
+// 	var user model.User
+// 	if err := db.Where(&model.User{Email: e}).First(&user).Error; err != nil {
+// 		if errors.Is(err, gorm.ErrRecordNotFound) {
+// 			return nil, nil
+// 		}
+// 		return nil, err
+// 	}
+// 	return &user, nil
+// }
+
 // GetAll retrieves all users
 func (r *userRepository) GetAll(offset, limit int) ([]*model.User, error) {
 	var users []*model.User

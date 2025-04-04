@@ -14,14 +14,19 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/swagger"
 )
 
-// @title	Belva Philips Backend API
-// @version		1.0
-// @description	This is an backend Api just for Belva Philips website
-// @termsOfService	http://swagger.io/terms/
-// @host localhost:8080
-// @BasePath /
+//	@title			Belva Philips Backend API
+//	@version		1.0
+//	@description	This is an backend API for Belva Philips website
+//	@termsOfService	http://swagger.io/terms/
+//	@host			localhost:8080
+//	@BasePath		/
+//
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 func main() {
 	app := fiber.New()
 	app.Use(logger.New(logger.Config{
@@ -38,6 +43,8 @@ func main() {
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
+
+	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	router.SetupRoutes(app, userHandler)
 

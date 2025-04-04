@@ -8,19 +8,128 @@ definitions:
       success:
         type: boolean
     type: object
+  model.CreateUserRequest:
+    properties:
+      company_name:
+        type: string
+      email:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      preferred_mode_of_communication:
+        type: string
+      want_to_receive_text:
+        type: boolean
+    type: object
   model.TokenRequestPayload:
     properties:
       sessionId:
         type: string
     type: object
+  model.UserResponse:
+    properties:
+      company_name:
+        type: string
+      created_at:
+        type: string
+      email:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      preferred_mode_of_communication:
+        type: string
+      updated_at:
+        type: string
+      want_to_receive_text:
+        type: boolean
+    type: object
 host: localhost:8080
 info:
   contact: {}
-  description: This is an backend Api just for Belva Philips website
+  description: This is an backend API for Belva Philips website
   termsOfService: http://swagger.io/terms/
   title: Belva Philips Backend API
   version: "1.0"
 paths:
+  /api/v1/user:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/handler.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - users
+  /api/v1/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/handler.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/handler.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - users
   /api/v1/user/token:
     post:
       consumes:
@@ -54,8 +163,52 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            type: string
+            $ref: '#/definitions/handler.ResponseHTTP'
       summary: Create a authorization token
       tags:
       - users
+  /users:
+    get:
+      consumes:
+      - application/json
+      description: Fetch a paginated list of users from the database
+      parameters:
+      - description: Page number (default is 1)
+        in: query
+        name: page
+        type: integer
+      - description: Number of users per page (default is 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/handler.ResponseHTTP'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/model.UserResponse'
+                    type: array
+                type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/handler.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get all users
+      tags:
+      - users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

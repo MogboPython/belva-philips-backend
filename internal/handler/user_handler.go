@@ -28,16 +28,17 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 }
 
 // CreateUserAccessToken creates a authorization token for an authenticated user
-// @Summary Create a authorization token
-// @Description Create a new authorization token with the provided information
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user body model.TokenRequestPayload true "User information"
-// @Success 201 {object} ResponseHTTP{data=map[string]string}
-// @Failure 400 {object} ResponseHTTP{}
-// @Failure 500 {object} ResponseHTTP{}
-// @Router /api/v1/user/token [post]
+//
+//	@Summary		Create a authorization token
+//	@Description	Create a new authorization token with the provided information
+//	@Tags			users
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		model.TokenRequestPayload	true	"User information"
+//	@Success		201		{object}	ResponseHTTP{data=map[string]string}
+//	@Failure		400		{object}	ResponseHTTP{}
+//	@Failure		500		{object}	ResponseHTTP{}
+//	@Router			/api/v1/user/token [post]
 func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
 	var payload model.TokenRequestPayload
 
@@ -68,16 +69,20 @@ func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
 }
 
 // CreateUser creates a new user
-// @Summary Create a new user
-// @Description Create a new user with the provided information
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param user body model.CreateUserRequest true "User information"
-// @Success 201 {object} ResponseHTTP{data=model.UserResponse}
-// @Failure 400 {object} ResponseHTTP{}
-// @Failure 500 {object} ResponseHTTP{}
-// @Router /api/v1/user [post]
+//
+//	@Summary		Create a new user
+//	@Description	Create a new user with the provided information
+//	@Tags			users
+//
+// @Security BearerAuth
+//
+//	@Accept			json
+//	@Produce		json
+//	@Param			user	body		model.CreateUserRequest	true	"User information"
+//	@Success		201		{object}	ResponseHTTP{data=model.UserResponse}
+//	@Failure		400		{object}	ResponseHTTP{}
+//	@Failure		500		{object}	ResponseHTTP{}
+//	@Router			/api/v1/user [post]
 func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	var payload model.CreateUserRequest
 
@@ -98,14 +103,6 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
-		// TODO: once I implement foreignkeys
-		// else if errors.Is(err, gorm.ErrForeignKeyViolated) {
-		// 	return c.Status(http.StatusBadRequest).JSON(ResponseHTTP{
-		// 		Success: false,
-		// 		Message: err.Error(),
-		// 		Data:    nil,
-		// 	})
-		// }
 		return c.Status(fiber.StatusInternalServerError).JSON(ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",
@@ -121,16 +118,20 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 }
 
 // GetAllUsers is a function to get all user data from the database
-// @Summary Get all users
-// @Description Fetch a paginated list of users from the database
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param page query int false "Page number (default is 1)"
-// @Param limit query int false "Number of users per page (default is 10)"
-// @Success 200 {array} ResponseHTTP{data=[]model.UserResponse}
-// @Failure 500 {object} ResponseHTTP{}
-// @Router /users?page=1&limit=10 [get]
+//
+//	@Summary		Get all users
+//	@Description	Fetch a paginated list of users from the database
+//	@Tags			users
+//
+// @Security BearerAuth
+//
+//	@Accept			json
+//	@Produce		json
+//	@Param			page	query		int	false	"Page number (default is 1)"
+//	@Param			limit	query		int	false	"Number of users per page (default is 10)"
+//	@Success		200		{array}		ResponseHTTP{data=[]model.UserResponse}
+//	@Failure		500		{object}	ResponseHTTP{}
+//	@Router			/users [get]
 func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 	pageStr := c.Query("page", "1")    // Default to page 1
 	limitStr := c.Query("limit", "10") // Default to limit 10
@@ -152,16 +153,20 @@ func (h *UserHandler) GetAllUsers(c *fiber.Ctx) error {
 }
 
 // GetUserByID is a function to get a user by ID
-// @Summary Get user by ID
-// @Description Get user by ID
-// @Tags users
-// @Accept json
-// @Produce json
-// @Param id path int true "User ID"
-// @Success 200 {object} ResponseHTTP{data=model.UserResponse}
-// @Failure 404 {object} ResponseHTTP{}
-// @Failure 500 {object} ResponseHTTP{}
-// @Router /api/v1/user/{id} [get]
+//
+//	@Summary		Get user by ID
+//	@Description	Get user by ID
+//	@Tags			users
+//
+// @Security BearerAuth
+//
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		int	true	"User ID"
+//	@Success		200	{object}	ResponseHTTP{data=model.UserResponse}
+//	@Failure		404	{object}	ResponseHTTP{}
+//	@Failure		500	{object}	ResponseHTTP{}
+//	@Router			/api/v1/user/{id} [get]
 func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 
