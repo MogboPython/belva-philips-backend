@@ -7,6 +7,7 @@ import (
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func GenerateToken(id string) (string, error) {
@@ -24,6 +25,12 @@ func GenerateToken(id string) (string, error) {
 	}
 
 	return t, nil
+}
+
+// CheckPasswordHash compare password with hash
+func CheckPasswordHash(password, hash string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
+	return err == nil
 }
 
 // func hashPassword(password string) (string, error) {

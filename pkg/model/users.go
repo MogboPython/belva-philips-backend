@@ -2,8 +2,8 @@ package model
 
 import "time"
 
-type TokenRequestPayload struct {
-	UserSessionID string `json:"sessionId"`
+type GetUserByEmailRequest struct {
+	Email string `json:"email"`
 }
 
 type User struct {

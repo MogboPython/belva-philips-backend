@@ -1,13 +1,5 @@
 basePath: /
 definitions:
-  handler.ResponseHTTP:
-    properties:
-      data: {}
-      message:
-        type: string
-      success:
-        type: boolean
-    type: object
   model.CreateUserRequest:
     properties:
       company_name:
@@ -21,6 +13,14 @@ definitions:
       preferred_mode_of_communication:
         type: string
       want_to_receive_text:
+        type: boolean
+    type: object
+  model.ResponseHTTP:
+    properties:
+      data: {}
+      message:
+        type: string
+      success:
         type: boolean
     type: object
   model.TokenRequestPayload:
@@ -57,117 +57,7 @@ info:
   title: Belva Philips Backend API
   version: "1.0"
 paths:
-  /api/v1/user:
-    post:
-      consumes:
-      - application/json
-      description: Create a new user with the provided information
-      parameters:
-      - description: User information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.CreateUserRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/handler.ResponseHTTP'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.UserResponse'
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.ResponseHTTP'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.ResponseHTTP'
-      security:
-      - BearerAuth: []
-      summary: Create a new user
-      tags:
-      - users
-  /api/v1/user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get user by ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/handler.ResponseHTTP'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.UserResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/handler.ResponseHTTP'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.ResponseHTTP'
-      security:
-      - BearerAuth: []
-      summary: Get user by ID
-      tags:
-      - users
-  /api/v1/user/token:
-    post:
-      consumes:
-      - application/json
-      description: Create a new authorization token with the provided information
-      parameters:
-      - description: User information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.TokenRequestPayload'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/handler.ResponseHTTP'
-            - properties:
-                data:
-                  additionalProperties:
-                    type: string
-                  type: object
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/handler.ResponseHTTP'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/handler.ResponseHTTP'
-      summary: Create a authorization token
-      tags:
-      - users
-  /users:
+  /api/v1/admin/get_users:
     get:
       consumes:
       - application/json
@@ -189,7 +79,7 @@ paths:
           schema:
             items:
               allOf:
-              - $ref: '#/definitions/handler.ResponseHTTP'
+              - $ref: '#/definitions/model.ResponseHTTP'
               - properties:
                   data:
                     items:
@@ -200,10 +90,197 @@ paths:
         "500":
           description: Internal Server Error
           schema:
-            $ref: '#/definitions/handler.ResponseHTTP'
+            $ref: '#/definitions/model.ResponseHTTP'
       security:
       - BearerAuth: []
       summary: Get all users
+      tags:
+      - admin
+  /api/v1/admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Create a new authorization token with the provided information
+      parameters:
+      - description: The user name for login
+        in: query
+        name: username
+        required: true
+        type: string
+      - description: The password name for login
+        in: query
+        name: password
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      summary: Logs admin user into the system
+      tags:
+      - admin
+  /api/v1/user:
+    post:
+      consumes:
+      - application/json
+      description: Create a new user with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateUserRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Create a new user
+      tags:
+      - users
+  /api/v1/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - admin
+  /api/v1/user/get_user:
+    get:
+      consumes:
+      - application/json
+      description: Get user by Email
+      parameters:
+      - description: User Email
+        in: query
+        name: email
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get user by Email
+      tags:
+      - users
+  /api/v1/user/token:
+    post:
+      consumes:
+      - application/json
+      description: Create a new authorization token with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.TokenRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      summary: Create a authorization token
       tags:
       - users
 securityDefinitions:

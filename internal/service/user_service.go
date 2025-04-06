@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
@@ -14,7 +13,8 @@ import (
 type UserService interface {
 	CreateUser(req *model.CreateUserRequest) (*model.UserResponse, error)
 	GetUserByID(id string) (*model.UserResponse, error)
-	GetAllUsers(page, limit string) ([]*model.UserResponse, error)
+	GetUserByEmail(req *model.GetUserByEmailRequest) (*model.UserResponse, error)
+	// GetAllUsers(page, limit string) ([]*model.UserResponse, error)
 	// UpdateUser(id int64, req *model.UpdateUserRequest) (*model.UserResponse, error)
 	// DeleteUser(id int64) error
 }
@@ -63,33 +63,12 @@ func (s *userService) GetUserByID(id string) (*model.UserResponse, error) {
 	return mapUserToResponse(user), nil
 }
 
-// GetAllUsers retrieves all users
-func (s *userService) GetAllUsers(pageStr, limitStr string) ([]*model.UserResponse, error) {
-	// Convert to integers
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 {
-		limit = 10
-	}
-
-	// Calculate offset
-	offset := (page - 1) * limit
-
-	users, err := s.userRepo.GetAll(offset, limit)
+func (s *userService) GetUserByEmail(req *model.GetUserByEmailRequest) (*model.UserResponse, error) {
+	user, err := s.userRepo.GetByEmail(req.Email)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get users: %w", err)
+		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
-
-	var userResponses []*model.UserResponse
-	for _, user := range users {
-		userResponses = append(userResponses, mapUserToResponse(user))
-	}
-
-	return userResponses, nil
+	return mapUserToResponse(user), nil
 }
 
 // UpdateUser updates an existing user
