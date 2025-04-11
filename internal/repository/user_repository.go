@@ -30,9 +30,6 @@ func NewUserRepository(db *gorm.DB) UserRepository {
 // Create inserts a new user into the database
 func (r *userRepository) Create(user *model.User) error {
 	err := r.db.Create(&user).Error
-	// if errors.Is(err, gorm.ErrDuplicatedKey) {
-	// 	return fmt.Errorf("user with this email exists: %w", err)
-	// }
 	return err
 }
 
@@ -56,18 +53,6 @@ func (r *userRepository) GetByEmail(email string) (*model.User, error) {
 
 	return &user, nil
 }
-
-// func getUserByEmail(e string) (*model.User, error) {
-// 	db := database.DB
-// 	var user model.User
-// 	if err := db.Where(&model.User{Email: e}).First(&user).Error; err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			return nil, nil
-// 		}
-// 		return nil, err
-// 	}
-// 	return &user, nil
-// }
 
 // GetAll retrieves all users
 func (r *userRepository) GetAll(offset, limit int) ([]*model.User, error) {

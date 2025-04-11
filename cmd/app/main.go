@@ -17,16 +17,16 @@ import (
 	"github.com/gofiber/swagger"
 )
 
-//	@title						Belva Philips Backend API
-//	@version					1.0
-//	@description				This is an backend API for Belva Philips website
-//	@termsOfService				http://swagger.io/terms/
-//	@host						localhost:8080
-//	@BasePath					/
+// @title						Belva Philips Backend API
+// @version					1.0
+// @description				This is an backend API for Belva Philips website
+// @termsOfService				http://swagger.io/terms/
+// @host						localhost:8080
+// @BasePath					/
 //
-//	@securityDefinitions.apikey	BearerAuth
-//	@in							header
-//	@name						Authorization
+// @securityDefinitions.apikey	BearerAuth
+// @in							header
+// @name						Authorization
 func main() {
 	app := fiber.New()
 	app.Use(logger.New(logger.Config{
@@ -41,15 +41,20 @@ func main() {
 
 	// Initialize repository, service, and handler
 	userRepo := repository.NewUserRepository(db)
+	orderRepo := repository.NewOrderRepository(db)
 
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
+
 	adminService := service.NewAdminService(userRepo)
 	adminHandler := handler.NewAdminHandler(adminService)
 
+	orderService := service.NewOrderService(orderRepo, userRepo)
+	orderHandler := handler.NewOrderHandler(orderService)
+
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	router.SetupRoutes(app, userHandler, adminHandler)
+	router.SetupRoutes(app, userHandler, adminHandler, orderHandler)
 
 	app.Listen(fmt.Sprintf(":%s", config.Config("PORT")))
 }

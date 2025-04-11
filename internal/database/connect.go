@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
-	"github.com/MogboPython/belvaphilips_backend/pkg/model"
+	// "github.com/MogboPython/belvaphilips_backend/pkg/model"
 
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -22,7 +22,7 @@ func ConnectDB() {
 
 	fmt.Println("Connection Opened to Database")
 	// TODO: work here
-	DB.AutoMigrate(&model.User{})
+	// DB.AutoMigrate(&model.User{}, &model.Order{})
 	fmt.Println("Database Migrated")
 
 }

@@ -8,17 +8,15 @@ import (
 )
 
 // SetupRoutes func
-func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler *handler.AdminHandler) {
+func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler *handler.AdminHandler, orderHandler *handler.OrderHandler) {
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
 
 	swaggerCfg := swagger.Config{
-		BasePath: "/cmd/app/docs", // swagger ui base path
+		BasePath: "/cmd/app/docs",
 		FilePath: "./cmd/app/docs/swagger.json",
-		// Path:     "swagger",
-		// Title:    "Belva Philips Backend API",
 	}
 
 	app.Use(swagger.New(swaggerCfg))
@@ -26,7 +24,7 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	// grouping
 	api := app.Group("/api/v1")
 	{
-		v1 := api.Group("/user")
+		v1 := api.Group("/users")
 		v1.Post("/token", userHandler.CreateUserAccessToken)
 		v1.Get("/get_user", middleware.Protected(), userHandler.GetUserByEmail)
 		v1.Post("/", middleware.Protected(), userHandler.CreateUser)
@@ -35,9 +33,16 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	}
 	{
 		admin := api.Group("/admin")
-		admin.Get("/login", middleware.AdminProtected(), adminHandler.AdminLogin)
-		admin.Get("/:id", middleware.AdminProtected(), adminHandler.GetUserByID)
+		admin.Post("/login", adminHandler.AdminLogin)
 		admin.Get("/get_users", middleware.AdminProtected(), adminHandler.GetAllUsers)
+		admin.Get("/user/:id", middleware.AdminProtected(), adminHandler.GetUserByID)
+	}
+	{
+		order := api.Group("/orders/")
+		order.Post("/", orderHandler.CreateOrder)
+		order.Get("/", orderHandler.GetAllOrders)
+		order.Get("/user/:userId", orderHandler.GetOrdersByUserID)
+		order.Get("/:id", orderHandler.GetOrderByID)
 	}
 
 	// handle unavailable route

@@ -1,5 +1,12 @@
 basePath: /
 definitions:
+  model.AdminLoginRequest:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
   model.CreateUserRequest:
     properties:
       company_name:
@@ -14,6 +21,70 @@ definitions:
         type: string
       want_to_receive_text:
         type: boolean
+    type: object
+  model.OrderRequest:
+    properties:
+      delivery_speed:
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      finish_type:
+        type: string
+      product_description:
+        type: string
+      product_name:
+        type: string
+      quantity:
+        type: integer
+      shoot_type:
+        type: string
+      shots:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      user_email:
+        type: string
+    type: object
+  model.OrderResponse:
+    properties:
+      created_at:
+        type: string
+      delivery_speed:
+        type: string
+      details:
+        additionalProperties: true
+        type: object
+      finish_type:
+        type: string
+      id:
+        type: string
+      product_description:
+        type: string
+      product_description_image:
+        type: string
+      product_name:
+        type: string
+      quantity:
+        type: integer
+      shoot_type:
+        type: string
+      shots:
+        items:
+          type: string
+        type: array
+      status:
+        type: string
+      updated_at:
+        type: string
+      user_email:
+        type: string
+      user_id:
+        type: string
+      user_membership_status:
+        type: string
     type: object
   model.ResponseHTTP:
     properties:
@@ -102,16 +173,12 @@ paths:
       - application/json
       description: Create a new authorization token with the provided information
       parameters:
-      - description: The user name for login
-        in: query
-        name: username
+      - description: Login information
+        in: body
+        name: user
         required: true
-        type: string
-      - description: The password name for login
-        in: query
-        name: password
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/model.AdminLoginRequest'
       produces:
       - application/json
       responses:
@@ -137,7 +204,234 @@ paths:
       summary: Logs admin user into the system
       tags:
       - admin
-  /api/v1/user:
+  /api/v1/admin/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get user by ID
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UserResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get user by ID
+      tags:
+      - admin
+  /api/v1/orders:
+    get:
+      consumes:
+      - application/json
+      description: Fetch a paginated list of orders from the database
+      parameters:
+      - description: Page number (default is 1)
+        in: query
+        name: page
+        type: integer
+      - description: Number of orders per page (default is 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/model.ResponseHTTP'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/model.OrderResponse'
+                    type: array
+                type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get all orders (strictly for admin)
+      tags:
+      - orders
+    post:
+      consumes:
+      - application/json
+      description: Create a new order with the provided information
+      parameters:
+      - description: Order information
+        in: body
+        name: order
+        required: true
+        schema:
+          $ref: '#/definitions/model.OrderRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.OrderResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Create a new order
+      tags:
+      - orders
+  /api/v1/orders/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get order by ID
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.OrderResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get order by ID
+      tags:
+      - orders
+  /api/v1/orders/user/{userId}:
+    get:
+      consumes:
+      - application/json
+      description: Get order by User ID
+      parameters:
+      - description: User ID of the user
+        in: query
+        name: userId
+        type: string
+      - description: Page number (default is 1)
+        in: query
+        name: page
+        type: integer
+      - description: Number of orders per page (default is 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.OrderResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Get order by User ID
+      tags:
+      - orders
+  /api/v1/user/token:
+    post:
+      consumes:
+      - application/json
+      description: Create a new authorization token with the provided information
+      parameters:
+      - description: User information
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/model.TokenRequestPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  additionalProperties:
+                    type: string
+                  type: object
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      summary: Create a authorization token
+      tags:
+      - users
+  /api/v1/users:
     post:
       consumes:
       - application/json
@@ -174,43 +468,7 @@ paths:
       summary: Create a new user
       tags:
       - users
-  /api/v1/user/{id}:
-    get:
-      consumes:
-      - application/json
-      description: Get user by ID
-      parameters:
-      - description: User ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/model.ResponseHTTP'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.UserResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-      security:
-      - BearerAuth: []
-      summary: Get user by ID
-      tags:
-      - admin
-  /api/v1/user/get_user:
+  /api/v1/users/get_user:
     get:
       consumes:
       - application/json
@@ -244,43 +502,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Get user by Email
-      tags:
-      - users
-  /api/v1/user/token:
-    post:
-      consumes:
-      - application/json
-      description: Create a new authorization token with the provided information
-      parameters:
-      - description: User information
-        in: body
-        name: user
-        required: true
-        schema:
-          $ref: '#/definitions/model.TokenRequestPayload'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            allOf:
-            - $ref: '#/definitions/model.ResponseHTTP'
-            - properties:
-                data:
-                  additionalProperties:
-                    type: string
-                  type: object
-              type: object
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-      summary: Create a authorization token
       tags:
       - users
 securityDefinitions:

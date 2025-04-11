@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"strconv"
 	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
@@ -33,10 +32,12 @@ func NewAdminService(userRepo repository.UserRepository) AdminService {
 
 // Login Admin with username and password
 func (s *adminService) Login(req *model.AdminLoginRequest) (string, error) {
-
-	if !utils.CheckPasswordHash(req.Username, config.Config("ADMIN_USERNAME_HASH")) || !utils.CheckPasswordHash(req.Password, config.Config("ADMIN_PASSWORD_HASH")) {
+	if (req.Username != config.Config("ADMIN_USERNAME_HASH")) || (req.Password != config.Config("ADMIN_PASSWORD_HASH")) {
 		return "", errors.New("incorrect username or password")
 	}
+	// if !utils.CheckPasswordHash(req.Username, config.Config("ADMIN_USERNAME_HASH")) || !utils.CheckPasswordHash(req.Password, config.Config("ADMIN_PASSWORD_HASH")) {
+	// 	return "", errors.New("incorrect username or password")
+	// }
 
 	claims := jwt.MapClaims{
 		"sessionId": "AdminSession",
@@ -66,18 +67,7 @@ func (s *adminService) GetUserByID(id string) (*model.UserResponse, error) {
 // GetAllUsers retrieves all users
 func (s *adminService) GetAllUsers(pageStr, limitStr string) ([]*model.UserResponse, error) {
 	// Convert to integers
-	page, err := strconv.Atoi(pageStr)
-	if err != nil || page < 1 {
-		page = 1
-	}
-
-	limit, err := strconv.Atoi(limitStr)
-	if err != nil || limit < 1 {
-		limit = 10
-	}
-
-	// Calculate offset
-	offset := (page - 1) * limit
+	offset, limit := utils.GetPageAndLimitInt(pageStr, limitStr)
 
 	users, err := s.userRepo.GetAll(offset, limit)
 	if err != nil {

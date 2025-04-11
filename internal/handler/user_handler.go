@@ -75,7 +75,7 @@ func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
 //	@Success		201		{object}	model.ResponseHTTP{data=model.UserResponse}
 //	@Failure		400		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/user [post]
+//	@Router			/api/v1/users [post]
 func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	var payload model.CreateUserRequest
 
@@ -147,10 +147,10 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			email	query		string	true	"User Email"
-//	@Success		200	{object}	model.ResponseHTTP{data=model.UserResponse}
-//	@Failure		404	{object}	model.ResponseHTTP{}
-//	@Failure		500	{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/user/get_user [get]
+//	@Success		200		{object}	model.ResponseHTTP{data=model.UserResponse}
+//	@Failure		404		{object}	model.ResponseHTTP{}
+//	@Failure		500		{object}	model.ResponseHTTP{}
+//	@Router			/api/v1/users/get_user [get]
 func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 	var payload model.GetUserByEmailRequest
 

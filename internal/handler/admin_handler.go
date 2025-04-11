@@ -25,11 +25,10 @@ func NewAdminHandler(adminService service.AdminService) *AdminHandler {
 //	@Tags			admin
 //	@Accept			json
 //	@Produce		json
-//	@Param			username	query		string	true	"The user name for login"
-//	@Param			password	query		string	true	"The password name for login"
-//	@Success		201			{object}	model.ResponseHTTP{data=map[string]string}
-//	@Failure		400			{object}	model.ResponseHTTP{}
-//	@Failure		500			{object}	model.ResponseHTTP{}
+//	@Param			user	body		model.AdminLoginRequest	true	"Login information"
+//	@Success		201		{object}	model.ResponseHTTP{data=map[string]string}
+//	@Failure		400		{object}	model.ResponseHTTP{}
+//	@Failure		500		{object}	model.ResponseHTTP{}
 //	@Router			/api/v1/admin/login [post]
 func (h *AdminHandler) AdminLogin(c *fiber.Ctx) error {
 	var payload model.AdminLoginRequest
@@ -116,7 +115,7 @@ func (h *AdminHandler) GetAllUsers(c *fiber.Ctx) error {
 //	@Success		200	{object}	model.ResponseHTTP{data=model.UserResponse}
 //	@Failure		404	{object}	model.ResponseHTTP{}
 //	@Failure		500	{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/user/{id} [get]
+//	@Router			/api/v1/admin/user/{id} [get]
 func (h *AdminHandler) GetUserByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 
