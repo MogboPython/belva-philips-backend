@@ -10,9 +10,10 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func GenerateToken(id string) (string, error) {
+func GenerateToken(id, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"sessionId": id,
+		"role":      role,
 		"exp":       time.Now().Add(time.Hour * 72).Unix(),
 	}
 

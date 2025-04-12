@@ -1,14 +1,17 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"gorm.io/gorm"
 )
 
 type OrderRepository interface {
 	Create(order *model.Order) error
-	GetByOrderID(id string) (*model.Order, error)
-	GetByUserID(user_id string, offset, limit int) ([]*model.Order, error)
+	GetByOrderID(orderID string) (*model.Order, error)
+	GetByUserID(userID string, offset, limit int) ([]*model.Order, error)
+	UpdateOrder(orderID, status string) (*model.Order, error)
 	GetAll(page, limit int) ([]*model.Order, error)
 	// Delete(id int64) error
 }
@@ -30,10 +33,10 @@ func (r *orderRepository) Create(order *model.Order) error {
 	return r.db.Model(&order).Association("User").Find(&order.User)
 }
 
-func (r *orderRepository) GetByOrderID(id string) (*model.Order, error) {
+func (r *orderRepository) GetByOrderID(orderID string) (*model.Order, error) {
 	var order model.Order
 
-	if err := r.db.Preload("User").Where(&model.Order{ID: id}).First(&order).Error; err != nil {
+	if err := r.db.Preload("User").Where("id = ?", orderID).First(&order).Error; err != nil {
 		return nil, err
 	}
 
@@ -59,4 +62,21 @@ func (r *orderRepository) GetByUserID(userID string, offset, limit int) ([]*mode
 	}
 
 	return orders, nil
+}
+
+func (r *orderRepository) UpdateOrder(orderID, status string) (*model.Order, error) {
+	var order model.Order
+
+	if err := r.db.Preload("User").Where("id = ?", orderID).First(&order).Error; err != nil {
+		return nil, err
+	}
+
+	order.Status = status
+	order.UpdatedAt = time.Now()
+
+	if err := r.db.Save(&order).Error; err != nil {
+		return nil, err
+	}
+
+	return &order, nil
 }

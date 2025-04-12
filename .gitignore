@@ -23,5 +23,7 @@ go.work.sum
 
 # env file
 .env.*
+.air.toml
 
 dump.txt
+file_strcture.txt

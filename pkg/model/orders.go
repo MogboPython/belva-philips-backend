@@ -23,39 +23,21 @@ type Order struct {
 	Status                  string         `gorm:"default:QUOTE RECEIVED" json:"status"`
 	CreatedAt               time.Time      `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt               time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
-	// Props                   string         `json:"props"`
-	// Backdrop                string         `json:"backdrop"`
-	// ItemsInFrame            string         `json:"items_in_frame"`
-	// Shadow                  string         `json:"shadow"`
-	// ModelChoice             string         `json:"model_choice"`
-	// ModelDisplay            string         `json:"model_display"`
-	// VideoType               string         `gorm:"default:Standard" json:"video_type"`
-	// VideoQuantity           int            `gorm:"not null" json:"video_quantity"`
-	// AnimationPackage        string         `json:"animation_package"`
 }
 
 type OrderRequest struct {
-	UserEmail          string                 `json:"user_email"`
-	ProductName        string                 `json:"product_name"`
-	ProductDescription string                 `json:"product_description"`
-	ShootType          string                 `json:"shoot_type"`
-	Details            map[string]interface{} `json:"details"`
-	FinishType         string                 `json:"finish_type,omitempty"`
-	Quantity           int                    `json:"quantity,omitempty"`
-	Shots              []string               `json:"shots,omitempty"`
-	DeliverySpeed      string                 `json:"delivery_speed,omitempty"`
-	Status             string                 `json:"status,omitempty"`
+	UserEmail          string                 `json:"user_email" validate:"required,email"`
+	ProductName        string                 `json:"product_name" validate:"required"`
+	ProductDescription string                 `json:"product_description" validate:"required"`
+	ShootType          string                 `json:"shoot_type" validate:"required"`
+	Details            map[string]interface{} `json:"details" validate:"omitempty"`
+	FinishType         string                 `json:"finish_type" validate:"omitempty"`
+	Quantity           int                    `json:"quantity" validate:"omitempty"`
+	Shots              []string               `json:"shots" validate:"omitempty"`
+	DeliverySpeed      string                 `json:"delivery_speed" validate:"omitempty"`
+	Status             string                 `json:"status" validate:"omitempty"`
+}
 
-	// Details            datatypes.JSON `json:"details,omitempty"`
-	// Props        string   `json:"props,omitempty"`
-	// Backdrop     string   `json:"backdrop,omitempty"`
-	// ItemsInFrame string   `json:"items_in_frame,omitempty"`
-	// Shadow       string   `json:"shadow,omitempty"`
-
-	// ModelChoice  string `json:"model_choice,omitempty"`
-	// ModelDisplay string `json:"model_display,omitempty"`
-
-	// VideoType        string `json:"video_type,omitempty"`
-	// VideoQuantity    int    `json:"video_quantity,omitempty"`
-	// AnimationPackage string `json:"animation_package,omitempty"`
+type OrderStatusChangeRequest struct {
+	Status string `json:"status" validate:"required"`
 }

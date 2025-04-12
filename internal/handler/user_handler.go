@@ -7,16 +7,21 @@ import (
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
+	"github.com/MogboPython/belvaphilips_backend/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 type UserHandler struct {
 	userService service.UserService
+	validator   *validator.Validator
 }
 
 func NewUserHandler(userService service.UserService) *UserHandler {
-	return &UserHandler{userService: userService}
+	return &UserHandler{
+		userService: userService,
+		validator:   validator.New(),
+	}
 }
 
 // TODO: remove this from swagger
@@ -43,7 +48,15 @@ func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
 		})
 	}
 
-	token, err := utils.GenerateToken(payload.UserSessionID)
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	token, err := utils.GenerateToken(payload.UserSessionID, "authenticated")
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
@@ -80,6 +93,14 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	var payload model.CreateUserRequest
 
 	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: err.Error(),
@@ -155,6 +176,14 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 	var payload model.GetUserByEmailRequest
 
 	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: err.Error(),

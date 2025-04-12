@@ -4,14 +4,11 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
-
-	"github.com/golang-jwt/jwt/v5"
 )
 
 type AdminService interface {
@@ -35,24 +32,18 @@ func (s *adminService) Login(req *model.AdminLoginRequest) (string, error) {
 	if (req.Username != config.Config("ADMIN_USERNAME_HASH")) || (req.Password != config.Config("ADMIN_PASSWORD_HASH")) {
 		return "", errors.New("incorrect username or password")
 	}
+	// FIXME: fix password ish
 	// if !utils.CheckPasswordHash(req.Username, config.Config("ADMIN_USERNAME_HASH")) || !utils.CheckPasswordHash(req.Password, config.Config("ADMIN_PASSWORD_HASH")) {
 	// 	return "", errors.New("incorrect username or password")
 	// }
 
-	claims := jwt.MapClaims{
-		"sessionId": "AdminSession",
-		"exp":       time.Now().Add(time.Hour * 72).Unix(),
-	}
-
-	// Create token, sign and generate encoded token
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	t, err := token.SignedString([]byte(config.Config("ADMIN_JWT_SECRET")))
+	token, err := utils.GenerateToken("AdminSession", "admin")
 	if err != nil {
 		log.Println("Error signing token:", err)
 		return "", errors.New("error generating token")
 	}
 
-	return t, nil
+	return token, nil
 }
 
 // GetUserByID retrieves a user by ID

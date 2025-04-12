@@ -5,16 +5,21 @@ import (
 
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
+	"github.com/MogboPython/belvaphilips_backend/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 type OrderHandler struct {
 	orderService service.OrderService
+	validator    *validator.Validator
 }
 
 func NewOrderHandler(orderService service.OrderService) *OrderHandler {
-	return &OrderHandler{orderService: orderService}
+	return &OrderHandler{
+		orderService: orderService,
+		validator:    validator.New(),
+	}
 }
 
 // CreateOrder creates a new order by a user
@@ -36,6 +41,14 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	var payload model.OrderRequest
 
 	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: err.Error(),
@@ -75,8 +88,8 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 //	@Failure		500		{object}	model.ResponseHTTP{}
 //	@Router			/api/v1/orders [get]
 func (h *OrderHandler) GetAllOrders(c *fiber.Ctx) error {
-	pageStr := c.Query("page", "1")    // Default to page 1
-	limitStr := c.Query("limit", "10") // Default to limit 10
+	pageStr := c.Query("page", "1")
+	limitStr := c.Query("limit", "10")
 
 	orders, err := h.orderService.GetAllOrders(pageStr, limitStr)
 	if err != nil {
@@ -170,5 +183,64 @@ func (h *OrderHandler) GetOrdersByUserID(c *fiber.Ctx) error {
 		Success: true,
 		Message: "Successfully retrieved orders.",
 		Data:    orders,
+	})
+}
+
+// UpdateOrderStatus is a function to update an order status
+//
+//	@Summary		Update the status of an order (strictly for admin)
+//	@Description	Update the status of an order
+//	@Tags			orders
+//
+//	@Security		BearerAuth
+//
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string	true	"Order ID"
+//	@Param			status	query		string	true	"Status update"
+//	@Success		200		{object}	model.ResponseHTTP{data=model.OrderResponse}
+//	@Failure		404		{object}	model.ResponseHTTP{}
+//	@Failure		500		{object}	model.ResponseHTTP{}
+//	@Router			/api/v1/orders/{id}/status [get]
+func (h *OrderHandler) UpdateOrderStatus(c *fiber.Ctx) error {
+	id := c.Params("id")
+	var payload model.OrderStatusChangeRequest
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	order, err := h.orderService.UpdateOrderStatus(id, &payload)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Order not found",
+				Data:    nil,
+			})
+		}
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully updated order status",
+		Data:    *order,
 	})
 }

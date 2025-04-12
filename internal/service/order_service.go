@@ -13,23 +13,20 @@ import (
 	"gorm.io/datatypes"
 )
 
-// UserService interface defines methods for user business logic
 type OrderService interface {
 	CreateOrder(req *model.OrderRequest) (*model.OrderResponse, error)
 	GetOrderByID(id string) (*model.OrderResponse, error)
 	GetAllOrders(page, limit string) ([]*model.OrderResponse, error)
 	GetOrdersByUserID(user_id, pageStr, limitStr string) ([]*model.OrderResponse, error)
-	// UpdateOrder(id int64, req *model.UpdateUserRequest) (*model.UserResponse, error)
+	UpdateOrderStatus(orderID string, request *model.OrderStatusChangeRequest) (*model.OrderResponse, error)
 	// DeleteUser(id int64) error
 }
 
-// userService implements UserService interface
 type orderService struct {
 	orderRepo repository.OrderRepository
 	userRepo  repository.UserRepository
 }
 
-// NewUserService creates a new user service
 func NewOrderService(orderRepo repository.OrderRepository, userRepo repository.UserRepository) OrderService {
 	return &orderService{
 		orderRepo: orderRepo,
@@ -120,6 +117,15 @@ func (s *orderService) GetOrdersByUserID(user_id, pageStr, limitStr string) ([]*
 	}
 
 	return orderResponses, nil
+}
+
+func (s *orderService) UpdateOrderStatus(orderID string, request *model.OrderStatusChangeRequest) (*model.OrderResponse, error) {
+	order, err := s.orderRepo.UpdateOrder(orderID, request.Status)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update order: %w", err)
+	}
+
+	return mapOrderToResponse(order), nil
 }
 
 // mapOrderToResponse maps a order model to a order response

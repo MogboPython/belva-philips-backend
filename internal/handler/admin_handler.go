@@ -6,16 +6,21 @@ import (
 
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
+	"github.com/MogboPython/belvaphilips_backend/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
 
 type AdminHandler struct {
 	adminService service.AdminService
+	validator    *validator.Validator
 }
 
 func NewAdminHandler(adminService service.AdminService) *AdminHandler {
-	return &AdminHandler{adminService: adminService}
+	return &AdminHandler{
+		adminService: adminService,
+		validator:    validator.New(),
+	}
 }
 
 // AdminLogin is a handler for creating an authorization token for an admin user
@@ -37,6 +42,14 @@ func (h *AdminHandler) AdminLogin(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Invalid request",
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
 			Data:    nil,
 		})
 	}
