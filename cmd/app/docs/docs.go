@@ -465,7 +465,7 @@ const docTemplate = `{
             }
         },
         "/api/v1/orders/{id}/status": {
-            "get": {
+            "put": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -491,11 +491,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
                         "description": "Status update",
                         "name": "status",
-                        "in": "query",
-                        "required": true
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.OrderStatusChangeRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -716,11 +718,85 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/api/v1/users/{id}/membership": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update the membership status of a user",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "users"
+                ],
+                "summary": "Update the membership status of a user",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Status update",
+                        "name": "status",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.OrderStatusChangeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/model.ResponseHTTP"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/model.MembershipStatusChangeRequest"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
         "model.AdminLoginRequest": {
             "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
             "properties": {
                 "password": {
                     "type": "string"
@@ -732,6 +808,11 @@ const docTemplate = `{
         },
         "model.CreateUserRequest": {
             "type": "object",
+            "required": [
+                "email",
+                "name",
+                "phone_number"
+            ],
             "properties": {
                 "company_name": {
                     "type": "string"
@@ -753,8 +834,25 @@ const docTemplate = `{
                 }
             }
         },
+        "model.MembershipStatusChangeRequest": {
+            "type": "object",
+            "required": [
+                "membership_status"
+            ],
+            "properties": {
+                "membership_status": {
+                    "type": "string"
+                }
+            }
+        },
         "model.OrderRequest": {
             "type": "object",
+            "required": [
+                "product_description",
+                "product_name",
+                "shoot_type",
+                "user_email"
+            ],
             "properties": {
                 "delivery_speed": {
                     "type": "string"
@@ -845,6 +943,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "user_membership_status": {
+                    "type": "string"
+                }
+            }
+        },
+        "model.OrderStatusChangeRequest": {
+            "type": "object",
+            "required": [
+                "status"
+            ],
+            "properties": {
+                "status": {
                     "type": "string"
                 }
             }

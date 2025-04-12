@@ -25,10 +25,11 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	api := app.Group("/api/v1")
 	api.Post("/admin/login", adminHandler.AdminLogin)
 	{
-		v1 := api.Group("/users")
-		v1.Post("/token", userHandler.CreateUserAccessToken)
-		v1.Get("/get_user", middleware.Protected(), userHandler.GetUserByEmail)
-		v1.Post("/", middleware.Protected(), userHandler.CreateUser)
+		user := api.Group("/users")
+		user.Post("/token", userHandler.CreateUserAccessToken)
+		user.Get("/get_user", middleware.Protected(), userHandler.GetUserByEmail)
+		user.Post("/", middleware.Protected(), userHandler.CreateUser)
+		user.Put("/:id/membership", userHandler.UpdateMembershipStatus)
 		// v1.Get("/:id", middleware.Protected(), userHandler.GetUserByID)
 		// v1.Put("/:id", handler.UpdateUser)
 	}
@@ -43,7 +44,7 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 		order.Get("/", middleware.AdminRole(), orderHandler.GetAllOrders)
 		order.Get("/user/:userId", orderHandler.GetOrdersByUserID)
 		order.Get("/:id", orderHandler.GetOrderByID)
-		order.Put("/:id/status", orderHandler.UpdateOrderStatus)
+		order.Put("/:id/status", middleware.AdminRole(), orderHandler.UpdateOrderStatus)
 	}
 
 	// handle unavailable route

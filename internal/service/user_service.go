@@ -17,7 +17,7 @@ type UserService interface {
 	CreateUser(req *model.CreateUserRequest) (*model.UserResponse, error)
 	GetUserByID(id string) (*model.UserResponse, error)
 	GetUserByEmail(req *model.GetUserByEmailRequest) (*model.UserResponse, error)
-	// GetAllUsers(page, limit string) ([]*model.UserResponse, error)
+	UpdateUserMembershipStatusChange(userID string, request *model.MembershipStatusChangeRequest) (*model.UserResponse, error)
 	// UpdateUser(id int64, req *model.UpdateUserRequest) (*model.UserResponse, error)
 	// DeleteUser(id int64) error
 }
@@ -71,6 +71,15 @@ func (s *userService) GetUserByEmail(req *model.GetUserByEmailRequest) (*model.U
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
+	return mapUserToResponse(user), nil
+}
+
+func (s *userService) UpdateUserMembershipStatusChange(userID string, request *model.MembershipStatusChangeRequest) (*model.UserResponse, error) {
+	user, err := s.userRepo.UpdateMembership(userID, request.Status)
+	if err != nil {
+		return nil, fmt.Errorf("failed to update order: %w", err)
+	}
+
 	return mapUserToResponse(user), nil
 }
 

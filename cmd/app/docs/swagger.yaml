@@ -6,6 +6,9 @@ definitions:
         type: string
       username:
         type: string
+    required:
+    - password
+    - username
     type: object
   model.CreateUserRequest:
     properties:
@@ -21,6 +24,17 @@ definitions:
         type: string
       want_to_receive_text:
         type: boolean
+    required:
+    - email
+    - name
+    - phone_number
+    type: object
+  model.MembershipStatusChangeRequest:
+    properties:
+      membership_status:
+        type: string
+    required:
+    - membership_status
     type: object
   model.OrderRequest:
     properties:
@@ -47,6 +61,11 @@ definitions:
         type: string
       user_email:
         type: string
+    required:
+    - product_description
+    - product_name
+    - shoot_type
+    - user_email
     type: object
   model.OrderResponse:
     properties:
@@ -85,6 +104,13 @@ definitions:
         type: string
       user_membership_status:
         type: string
+    type: object
+  model.OrderStatusChangeRequest:
+    properties:
+      status:
+        type: string
+    required:
+    - status
     type: object
   model.ResponseHTTP:
     properties:
@@ -352,7 +378,7 @@ paths:
       tags:
       - orders
   /api/v1/orders/{id}/status:
-    get:
+    put:
       consumes:
       - application/json
       description: Update the status of an order
@@ -363,10 +389,11 @@ paths:
         required: true
         type: string
       - description: Status update
-        in: query
+        in: body
         name: status
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/model.OrderStatusChangeRequest'
       produces:
       - application/json
       responses:
@@ -507,6 +534,48 @@ paths:
       security:
       - BearerAuth: []
       summary: Create a new user
+      tags:
+      - users
+  /api/v1/users/{id}/membership:
+    put:
+      consumes:
+      - application/json
+      description: Update the membership status of a user
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status update
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/model.OrderStatusChangeRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.MembershipStatusChangeRequest'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Update the membership status of a user
       tags:
       - users
   /api/v1/users/get_user:

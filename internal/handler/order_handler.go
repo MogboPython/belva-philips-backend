@@ -197,11 +197,11 @@ func (h *OrderHandler) GetOrdersByUserID(c *fiber.Ctx) error {
 //	@Accept			json
 //	@Produce		json
 //	@Param			id		path		string	true	"Order ID"
-//	@Param			status	query		string	true	"Status update"
+//	@Param			status	body		model.OrderStatusChangeRequest	true	"Status update"
 //	@Success		200		{object}	model.ResponseHTTP{data=model.OrderResponse}
 //	@Failure		404		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/orders/{id}/status [get]
+//	@Router			/api/v1/orders/{id}/status [put]
 func (h *OrderHandler) UpdateOrderStatus(c *fiber.Ctx) error {
 	id := c.Params("id")
 	var payload model.OrderStatusChangeRequest

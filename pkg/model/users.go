@@ -34,3 +34,7 @@ type CreateUserRequest struct {
 	PreferredMode     string `json:"preferred_mode_of_communication" validate:"omitempty"`
 	WantToReceiveText bool   `json:"want_to_receive_text" validate:"omitempty"`
 }
+
+type MembershipStatusChangeRequest struct {
+	Status string `json:"membership_status" validate:"required"`
+}

@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"gorm.io/gorm"
 )
@@ -11,6 +13,7 @@ type UserRepository interface {
 	GetByID(id string) (*model.User, error)
 	GetByEmail(email string) (*model.User, error)
 	GetAll(page, limit int) ([]*model.User, error)
+	UpdateMembership(userID, status string) (*model.User, error)
 	// Update(id int64, user *model.User) error
 	// Delete(id int64) error
 }
@@ -47,7 +50,7 @@ func (r *userRepository) GetByID(id string) (*model.User, error) {
 func (r *userRepository) GetByEmail(email string) (*model.User, error) {
 	var user model.User
 
-	if err := r.db.Where(&model.User{Email: email}).First(&user).Error; err != nil {
+	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
 		return nil, err
 	}
 
@@ -63,6 +66,23 @@ func (r *userRepository) GetAll(offset, limit int) ([]*model.User, error) {
 	}
 
 	return users, nil
+}
+
+func (r *userRepository) UpdateMembership(userID, status string) (*model.User, error) {
+	var user model.User
+
+	if err := r.db.Where("id = ?", userID).First(&user).Error; err != nil {
+		return nil, err
+	}
+
+	user.MembershipStatus = status
+	user.UpdatedAt = time.Now()
+
+	if err := r.db.Save(&user).Error; err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 // Update updates an existing user
