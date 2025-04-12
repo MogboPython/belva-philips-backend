@@ -351,6 +351,47 @@ paths:
       summary: Get order by ID
       tags:
       - orders
+  /api/v1/orders/{id}/status:
+    get:
+      consumes:
+      - application/json
+      description: Update the status of an order
+      parameters:
+      - description: Order ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Status update
+        in: query
+        name: status
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.OrderResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Update the status of an order (strictly for admin)
+      tags:
+      - orders
   /api/v1/orders/user/{userId}:
     get:
       consumes:
