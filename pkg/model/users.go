@@ -6,13 +6,6 @@ type GetUserByEmailRequest struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
-type ContactUsRequest struct {
-	Firstname string `json:"firstname" validate:"required"`
-	Lastname  string `json:"lastname" validate:"required"`
-	Email     string `json:"email" validate:"required,email"`
-	Message   string `json:"message" validate:"required"`
-}
-
 type User struct {
 	ID                string    `gorm:"default:uuid_generate_v4()" json:"id"`
 	Name              string    `gorm:"not null" json:"name"`

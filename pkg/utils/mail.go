@@ -1,71 +1,55 @@
 package utils
 
-// import (
-// 	"bytes"
-// 	"html/template"
-// 	"net/smtp"
+import (
+	"bytes"
+	"html/template"
+	"path/filepath"
+	"strconv"
 
-// 	"github.com/MogboPython/belvaphilips_backend/internal/config"
-// )
+	"github.com/MogboPython/belvaphilips_backend/internal/config"
+	"github.com/gofiber/fiber/v2/log"
+	gomail "gopkg.in/mail.v2"
+)
 
-// Request struct
-// type Request struct {
-// 	from    string
-// 	to      []string
-// 	subject string
-// 	body    string
-// }
+func ParseTemplate(templateFileName string, data any) (string, error) {
+	var body string
+	templatePath := filepath.Join("./templates", templateFileName)
 
-// func NewRequest(to []string, subject, body string) *Request {
-// 	return &Request{
-// 		to:      to,
-// 		subject: subject,
-// 		body:    body,
-// 	}
-// }
+	t, err := template.ParseFiles(templatePath)
+	if err != nil {
+		return "", err
+	}
+	buf := new(bytes.Buffer)
+	if err = t.Execute(buf, data); err != nil {
+		return "", err
+	}
+	body = buf.String()
+	return body, nil
+}
 
-// type TemplateData struct {
-// 	Name    string
-// 	Email   string
-// 	Message string
-// }
+func SendEmail(reciever, subject, body string) (bool, error) {
 
-// var auth smtp.Auth
+	// Create a new message
+	message := gomail.NewMessage()
+	message.SetHeader("From", config.Config("PLUNK_EMAIL"))
+	message.SetHeader("To", reciever)
+	message.SetHeader("Subject", subject)
+	message.SetBody("text/html", body)
 
-// func SendEmail(reciever, name, email, message string) (bool, error) {
-// 	auth = smtp.PlainAuth(config.Config("PLUNK_USERNAME"), config.Config("PLUNK_EMAIL"), config.Config("PLUNK_API_KEY"), "smtp.useplunk.com")
+	// Set up the SMTP dialer
+	portStr := config.Config("MAIL_PORT")
+	port, err := strconv.Atoi(portStr)
+	if err != nil {
+		log.Fatalf("Invalid MAIL_PORT: %v", err)
+	}
+	dialer := gomail.NewDialer(config.Config("MAIL_HOST"), port, config.Config("PLUNK_USERNAME"), config.Config("PLUNK_API_KEY"))
 
-// 	templateData := &TemplateData{
-// 		Name:    name,
-// 		Email:   email,
-// 		Message: message,
-// 	}
+	// Send the email
+	if err := dialer.DialAndSend(message); err != nil {
+		log.Error(err)
+		return false, err
+	}
 
-// 	email_req := NewRequest([]string{"junk@junk.com"}, "Hello Junk!", "Hello, World!")
-// 	if err := parseTemplate("template.html", templateData); err != nil {
-// 		return false, err
-// 	}
-
-// 	mime := "MIME-version: 1.0;\nContent-Type: text/html; charset=\"UTF-8\";\n\n"
-// 	subject := "Subject: New Contact Information from Website!\n"
-// 	msg := []byte(subject + mime + "\n" + r.body)
-// 	addr := "smtp.useplunk.com:587"
-
-// 	if err := smtp.SendMail(addr, auth, "dhanush@geektrust.in", reciever, msg); err != nil {
-// 		return false, err
-// 	}
-// 	return true, nil
-// }
-
-// func parseTemplate(templateFileName string, data interface{}) error {
-// 	t, err := template.ParseFiles(templateFileName)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	buf := new(bytes.Buffer)
-// 	if err = t.Execute(buf, data); err != nil {
-// 		return err
-// 	}
-// 	r.body = buf.String()
-// 	return nil
-// }
+	log.Info("Email sent successfully!")
+	return true, nil
+}

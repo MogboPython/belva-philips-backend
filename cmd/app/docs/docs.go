@@ -204,6 +204,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/api/v1/contact": {
+            "post": {
+                "description": "Submit contact form to notify admin",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "contact"
+                ],
+                "summary": "Submit contact form",
+                "parameters": [
+                    {
+                        "description": "Contact information",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.ContactUsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/orders": {
             "get": {
                 "security": [
@@ -289,7 +335,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "Order information",
-                        "name": "order",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -550,7 +596,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "User information",
-                        "name": "user",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -616,7 +662,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "User information",
-                        "name": "user",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -678,11 +724,13 @@ const docTemplate = `{
                 "summary": "Get user by Email",
                 "parameters": [
                     {
-                        "type": "string",
                         "description": "User Email",
-                        "name": "email",
-                        "in": "query",
-                        "required": true
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GetUserByEmailRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -747,7 +795,7 @@ const docTemplate = `{
                     },
                     {
                         "description": "Status update",
-                        "name": "status",
+                        "name": "request",
                         "in": "body",
                         "required": true,
                         "schema": {
@@ -806,6 +854,29 @@ const docTemplate = `{
                 }
             }
         },
+        "model.ContactUsRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "firstname",
+                "lastname",
+                "message"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "firstname": {
+                    "type": "string"
+                },
+                "lastname": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                }
+            }
+        },
         "model.CreateUserRequest": {
             "type": "object",
             "required": [
@@ -831,6 +902,17 @@ const docTemplate = `{
                 },
                 "want_to_receive_text": {
                     "type": "boolean"
+                }
+            }
+        },
+        "model.GetUserByEmailRequest": {
+            "type": "object",
+            "required": [
+                "email"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string"
                 }
             }
         },

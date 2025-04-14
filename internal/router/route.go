@@ -24,6 +24,7 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	// grouping
 	api := app.Group("/api/v1")
 	api.Post("/admin/login", adminHandler.AdminLogin)
+	api.Post("/contact", handler.ContactUs)
 	{
 		user := api.Group("/users")
 		user.Post("/token", userHandler.CreateUserAccessToken)

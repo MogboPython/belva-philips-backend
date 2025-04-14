@@ -83,30 +83,6 @@ func (s *userService) UpdateUserMembershipStatusChange(userID string, request *m
 	return mapUserToResponse(user), nil
 }
 
-// ContactUs sends a contact request to the website admin
-// func (s *userService) ContactUs(req *model.ContactUsRequest) error {
-// 	url := "https://api.useplunk.com/v1/send"
-
-// 	payload := strings.NewReader("{\n  \"to\": \"<string>\",\n  \"subject\": \"<string>\",\n  \"body\": \"<string>\",\n  \"subscribed\": true,\n  \"name\": \"<string>\",\n  \"from\": \"<string>\",\n  \"reply\": \"<string>\",\n  \"headers\": {}\n}")
-
-// 	email_req, _ := http.NewRequest("POST", url, payload)
-
-// 	email_req.Header.Add("Content-Type", "<content-type>")
-// 	email_req.Header.Add("Authorization", "Bearer <token>")
-
-// 	res, err := http.DefaultClient.Do(email_req)
-// 	if err != nil {
-// 		return fmt.Errorf("failed to find user: %w", err)
-// 	}
-
-// 	defer res.Body.Close()
-// 	body, _ := io.ReadAll(res.Body)
-
-// 	fmt.Println(res)
-// 	fmt.Println(string(body))
-// 	return nil
-// }
-
 // UpdateUser updates an existing user
 // func (s *userService) UpdateUser(id int64, req *model.UpdateUserRequest) (*model.UserResponse, error) {
 // 	if req == nil {

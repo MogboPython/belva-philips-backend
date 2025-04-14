@@ -32,7 +32,7 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 //	@Tags			users
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		model.TokenRequestPayload	true	"User information"
+//	@Param			request	body		model.TokenRequestPayload	true	"User information"
 //	@Success		201		{object}	model.ResponseHTTP{data=map[string]string}
 //	@Failure		400		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
@@ -84,7 +84,7 @@ func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
 //
 //	@Accept			json
 //	@Produce		json
-//	@Param			user	body		model.CreateUserRequest	true	"User information"
+//	@Param			request	body		model.CreateUserRequest	true	"User information"
 //	@Success		201		{object}	model.ResponseHTTP{data=model.UserResponse}
 //	@Failure		400		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
@@ -167,7 +167,7 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 //
 //	@Accept			json
 //	@Produce		json
-//	@Param			email	query		string	true	"User Email"
+//	@Param			request	body		model.GetUserByEmailRequest	true	"User Email"
 //	@Success		200		{object}	model.ResponseHTTP{data=model.UserResponse}
 //	@Failure		404		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
@@ -224,8 +224,8 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 //
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string	true	"User ID"
-//	@Param			status	body		model.OrderStatusChangeRequest	true	"Status update"
+//	@Param			id		path		string							true	"User ID"
+//	@Param			request	body		model.OrderStatusChangeRequest	true	"Status update"
 //	@Success		200		{object}	model.ResponseHTTP{data=model.MembershipStatusChangeRequest}
 //	@Failure		404		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}

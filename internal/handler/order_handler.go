@@ -32,7 +32,7 @@ func NewOrderHandler(orderService service.OrderService) *OrderHandler {
 //
 //	@Accept			json
 //	@Produce		json
-//	@Param			order	body		model.OrderRequest	true	"Order information"
+//	@Param			request	body		model.OrderRequest	true	"Order information"
 //	@Success		201		{object}	model.ResponseHTTP{data=model.OrderResponse}
 //	@Failure		400		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
@@ -43,7 +43,7 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 	if err := c.BodyParser(&payload); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
-			Message: err.Error(),
+			Message: "Invalid request",
 			Data:    nil,
 		})
 	}
@@ -196,7 +196,7 @@ func (h *OrderHandler) GetOrdersByUserID(c *fiber.Ctx) error {
 //
 //	@Accept			json
 //	@Produce		json
-//	@Param			id		path		string	true	"Order ID"
+//	@Param			id		path		string							true	"Order ID"
 //	@Param			status	body		model.OrderStatusChangeRequest	true	"Status update"
 //	@Success		200		{object}	model.ResponseHTTP{data=model.OrderResponse}
 //	@Failure		404		{object}	model.ResponseHTTP{}

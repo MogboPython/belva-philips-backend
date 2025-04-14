@@ -10,6 +10,22 @@ definitions:
     - password
     - username
     type: object
+  model.ContactUsRequest:
+    properties:
+      email:
+        type: string
+      firstname:
+        type: string
+      lastname:
+        type: string
+      message:
+        type: string
+    required:
+    - email
+    - firstname
+    - lastname
+    - message
+    type: object
   model.CreateUserRequest:
     properties:
       company_name:
@@ -28,6 +44,13 @@ definitions:
     - email
     - name
     - phone_number
+    type: object
+  model.GetUserByEmailRequest:
+    properties:
+      email:
+        type: string
+    required:
+    - email
     type: object
   model.MembershipStatusChangeRequest:
     properties:
@@ -266,6 +289,36 @@ paths:
       summary: Get user by ID
       tags:
       - admin
+  /api/v1/contact:
+    post:
+      consumes:
+      - application/json
+      description: Submit contact form to notify admin
+      parameters:
+      - description: Contact information
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.ContactUsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      summary: Submit contact form
+      tags:
+      - contact
   /api/v1/orders:
     get:
       consumes:
@@ -312,7 +365,7 @@ paths:
       parameters:
       - description: Order information
         in: body
-        name: order
+        name: request
         required: true
         schema:
           $ref: '#/definitions/model.OrderRequest'
@@ -470,7 +523,7 @@ paths:
       parameters:
       - description: User information
         in: body
-        name: user
+        name: request
         required: true
         schema:
           $ref: '#/definitions/model.TokenRequestPayload'
@@ -507,7 +560,7 @@ paths:
       parameters:
       - description: User information
         in: body
-        name: user
+        name: request
         required: true
         schema:
           $ref: '#/definitions/model.CreateUserRequest'
@@ -549,7 +602,7 @@ paths:
         type: string
       - description: Status update
         in: body
-        name: status
+        name: request
         required: true
         schema:
           $ref: '#/definitions/model.OrderStatusChangeRequest'
@@ -585,10 +638,11 @@ paths:
       description: Get user by Email
       parameters:
       - description: User Email
-        in: query
-        name: email
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/model.GetUserByEmailRequest'
       produces:
       - application/json
       responses:
