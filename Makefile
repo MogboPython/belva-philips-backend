@@ -1,5 +1,9 @@
+include .env.development
+
 .PHONY: build run dev swagger lint
 # build run dev test clean swagger migrate-up migrate-down lint
+BINARY_NAME=belvaphilips_backend
+MIGRATIONS_DIR=./db/migrations
 
 # Default target
 all: swagger build
@@ -7,7 +11,7 @@ all: swagger build
 # Build the application
 build:
 	@echo "Building application..."
-	go build -o bin/api cmd/api/main.go
+	go build -o bin/api cmd/app/main.go
 
 # Run the application
 run: build
@@ -45,6 +49,16 @@ git:
 # swag init -g cmd/api/main.go -o ./docs
 
 # Create database migrations
+# check-migration-name:
+# ifndef name
+# 	$(error name is required)
+# endif
+
+# Create a new Go migration
+# migrate-create: check-migration-name
+# 	@echo "Creating new Go migration '$(name)'..."
+# 	goose -dir ${MIGRATIONS_DIR} create $(name) go
+
 # migrate-create:
 # 	@echo "Creating migration..."
 # 	@read -p "Enter migration name: " name; \

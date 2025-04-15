@@ -36,6 +36,12 @@ func main() {
 	}))
 	app.Use(cors.New())
 
+	// TODO: change to manual migrations
+	// Run migrations before connecting to the database
+	// if err := database.RunMigrations(); err != nil {
+	// 	log.Printf("Error running migrations: %v", err)
+	// }
+
 	database.ConnectDB()
 	db := database.DB
 

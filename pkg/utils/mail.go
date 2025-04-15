@@ -40,7 +40,8 @@ func SendEmail(reciever, subject, body string) (bool, error) {
 	portStr := config.Config("MAIL_PORT")
 	port, err := strconv.Atoi(portStr)
 	if err != nil {
-		log.Fatalf("Invalid MAIL_PORT: %v", err)
+		log.Error("Invalid MAIL_PORT: %v", err)
+		return false, err
 	}
 	dialer := gomail.NewDialer(config.Config("MAIL_HOST"), port, config.Config("PLUNK_USERNAME"), config.Config("PLUNK_API_KEY"))
 

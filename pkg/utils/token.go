@@ -2,10 +2,10 @@ package utils
 
 import (
 	"errors"
-	"log"
 	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -21,7 +21,7 @@ func GenerateToken(id, role string) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	t, err := token.SignedString([]byte(config.Config("JWT_SECRET")))
 	if err != nil {
-		log.Println("Error signing token:", err)
+		log.Error("Error signing token:", err)
 		return "", errors.New("error generating token")
 	}
 
@@ -33,27 +33,3 @@ func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }
-
-// func hashPassword(password string) (string, error) {
-// 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
-// 	return string(bytes), err
-// }
-
-// func validToken(t *jwt.Token, id string) bool {
-// 	n, err := strconv.Atoi(id)
-// 	if err != nil {
-// 		return false
-// 	}
-
-// 	claims := t.Claims.(jwt.MapClaims)
-// 	uid := int(claims["user_id"].(float64))
-
-// 	return uid == n
-// }
-
-// CheckPasswordHash compare password with hash
-// func CheckPasswordHash(password, hash string) bool {
-// 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
-// 	log.Println(hash, "haaaash")
-// 	return err == nil
-// }

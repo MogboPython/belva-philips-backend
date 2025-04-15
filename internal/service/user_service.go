@@ -3,13 +3,11 @@ package service
 import (
 	"errors"
 	"fmt"
-	_ "io"
-	"log"
-	_ "net/http"
-	_ "strings"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
+
+	"github.com/gofiber/fiber/v2/log"
 )
 
 // UserService interface defines methods for user business logic
@@ -50,7 +48,7 @@ func (s *userService) CreateUser(req *model.CreateUserRequest) (*model.UserRespo
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
-		log.Printf("error saving user: %v", err)
+		log.Error("error saving user: %v", err)
 		return nil, err
 	}
 

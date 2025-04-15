@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/lib/pq"
 	"gorm.io/datatypes"
 )
@@ -69,7 +69,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 
 	// Save to database
 	if err := s.orderRepo.Create(order); err != nil {
-		log.Printf("error saving user: %v", err)
+		log.Error("error saving user: %v", err)
 		return nil, err
 	}
 
@@ -132,7 +132,7 @@ func (s *orderService) UpdateOrderStatus(orderID string, request *model.OrderSta
 func mapOrderToResponse(order *model.Order) *model.OrderResponse {
 	var detailsMap map[string]interface{}
 	if err := json.Unmarshal(order.Details, &detailsMap); err != nil {
-		log.Printf("error unmarshaling order details: %v", err)
+		log.Error("error unmarshaling order details: %v", err)
 		detailsMap = nil
 	}
 	shotsStringArray := []string(order.Shots)

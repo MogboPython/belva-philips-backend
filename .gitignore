@@ -29,3 +29,5 @@ dump.txt
 file_strcture.txt
 cnd/
 cod/
+db/
+internal/database/migration.go

@@ -3,12 +3,13 @@ package service
 import (
 	"errors"
 	"fmt"
-	"log"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
+
+	"github.com/gofiber/fiber/v2/log"
 )
 
 type AdminService interface {
@@ -39,7 +40,7 @@ func (s *adminService) Login(req *model.AdminLoginRequest) (string, error) {
 
 	token, err := utils.GenerateToken("AdminSession", "admin")
 	if err != nil {
-		log.Println("Error signing token:", err)
+		log.Error("Error signing token:", err)
 		return "", errors.New("error generating token")
 	}
 
