@@ -63,6 +63,7 @@ func (h *AdminHandler) AdminLogin(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",
@@ -141,6 +142,7 @@ func (h *AdminHandler) GetUserByID(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",

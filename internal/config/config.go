@@ -1,25 +1,26 @@
 package config
 
 import (
-	"fmt"
 	"os"
 
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/joho/godotenv"
 )
 
 // Config func to get env value
 func Config(key string) string {
-	// load .env file
-	env := os.Getenv("GO_ENV")
-	if env == "" {
-		env = "development"
-	}
-
-	envFile := ".env." + env
-
-	err := godotenv.Load(envFile)
+	err := godotenv.Load()
 	if err != nil {
-		fmt.Print("Error loading .env file")
+		log.Errorf("Error loading .env file: ", err)
 	}
+
 	return os.Getenv(key)
 }
+
+// load .env file
+// env := os.Getenv("ENV")
+// if env == "" {
+// 	env = "development"
+// }
+// envFile := ".env." + env
+// envFile

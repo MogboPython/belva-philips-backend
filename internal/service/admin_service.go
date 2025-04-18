@@ -29,7 +29,7 @@ func NewAdminService(userRepo repository.UserRepository) AdminService {
 }
 
 // Login Admin with username and password
-func (s *adminService) Login(req *model.AdminLoginRequest) (string, error) {
+func (*adminService) Login(req *model.AdminLoginRequest) (string, error) {
 	if (req.Username != config.Config("ADMIN_USERNAME_HASH")) || (req.Password != config.Config("ADMIN_PASSWORD_HASH")) {
 		return "", errors.New("incorrect username or password")
 	}
@@ -53,6 +53,7 @@ func (s *adminService) GetUserByID(id string) (*model.UserResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
+
 	return mapUserToResponse(user), nil
 }
 
@@ -66,9 +67,9 @@ func (s *adminService) GetAllUsers(pageStr, limitStr string) ([]*model.UserRespo
 		return nil, fmt.Errorf("failed to get users: %w", err)
 	}
 
-	var userResponses []*model.UserResponse
-	for _, user := range users {
-		userResponses = append(userResponses, mapUserToResponse(user))
+	userResponses := make([]*model.UserResponse, len(users))
+	for i, order := range users {
+		userResponses[i] = mapUserToResponse(order)
 	}
 
 	return userResponses, nil

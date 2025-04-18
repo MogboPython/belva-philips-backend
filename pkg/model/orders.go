@@ -26,16 +26,16 @@ type Order struct {
 }
 
 type OrderRequest struct {
-	UserEmail          string                 `json:"user_email" validate:"required,email"`
-	ProductName        string                 `json:"product_name" validate:"required"`
-	ProductDescription string                 `json:"product_description" validate:"required"`
-	ShootType          string                 `json:"shoot_type" validate:"required"`
-	Details            map[string]interface{} `json:"details" validate:"omitempty"`
-	FinishType         string                 `json:"finish_type" validate:"omitempty"`
-	Quantity           int                    `json:"quantity" validate:"omitempty"`
-	Shots              []string               `json:"shots" validate:"omitempty"`
-	DeliverySpeed      string                 `json:"delivery_speed" validate:"omitempty"`
-	Status             string                 `json:"status" validate:"omitempty"`
+	UserEmail          string         `json:"user_email" validate:"required,email"`
+	ProductName        string         `json:"product_name" validate:"required"`
+	ProductDescription string         `json:"product_description" validate:"required"`
+	ShootType          string         `json:"shoot_type" validate:"required"`
+	Details            map[string]any `json:"details" validate:"omitempty"`
+	FinishType         string         `json:"finish_type" validate:"omitempty"`
+	Quantity           int            `json:"quantity" validate:"omitempty"`
+	Shots              []string       `json:"shots" validate:"omitempty"`
+	DeliverySpeed      string         `json:"delivery_speed" validate:"omitempty"`
+	Status             string         `json:"status" validate:"omitempty"`
 }
 
 type OrderStatusChangeRequest struct {

@@ -3,7 +3,7 @@ package router
 import (
 	"github.com/MogboPython/belvaphilips_backend/internal/handler"
 	"github.com/MogboPython/belvaphilips_backend/internal/middleware"
-	swagger "github.com/gofiber/contrib/swagger"
+	"github.com/gofiber/contrib/swagger"
 	"github.com/gofiber/fiber/v2"
 )
 
@@ -31,8 +31,6 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 		user.Get("/get_user", middleware.Protected(), userHandler.GetUserByEmail)
 		user.Post("/", middleware.Protected(), userHandler.CreateUser)
 		user.Put("/:id/membership", userHandler.UpdateMembershipStatus)
-		// v1.Get("/:id", middleware.Protected(), userHandler.GetUserByID)
-		// v1.Put("/:id", handler.UpdateUser)
 	}
 	{
 		admin := api.Group("/admin", middleware.Protected(), middleware.AdminRole())
@@ -50,6 +48,9 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 
 	// handle unavailable route
 	app.Use(func(c *fiber.Ctx) error {
-		return c.SendStatus(404) // => 404 "Not Found"
+		return c.SendStatus(fiber.StatusNotFound)
 	})
 }
+
+// v1.Get("/:id", middleware.Protected(), userHandler.GetUserByID)
+// v1.Put("/:id", handler.UpdateUser)

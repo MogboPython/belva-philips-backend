@@ -6,32 +6,29 @@ import (
 	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
-	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 
-	fiberLogger "github.com/gofiber/fiber/v2/log"
+	"github.com/pressly/goose/v3"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	gormLogger "gorm.io/gorm/logger"
+	gormlogger "gorm.io/gorm/logger"
 )
 
-// var DB_MIGRATOR gorm.Migrator
-
 // ConnectDB connect to db
-func ConnectDB() {
+func ConnectDB() error {
 	var err error
 
 	dsn := config.Config("DIRECT_URL")
 
 	// Set logger level based on ENV
-	logLevel := gormLogger.Silent
+	logLevel := gormlogger.Silent
 	if config.Config("ENV") == "development" {
-		logLevel = gormLogger.Info
+		logLevel = gormlogger.Info
 	}
 
 	DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: gormLogger.New(
+		Logger: gormlogger.New(
 			log.New(os.Stdout, "", 0),
-			gormLogger.Config{
+			gormlogger.Config{
 				SlowThreshold: time.Second,
 				LogLevel:      logLevel,
 				Colorful:      true,
@@ -39,13 +36,31 @@ func ConnectDB() {
 		),
 	})
 	if err != nil {
-		panic("failed to connect database")
+		return err
 	}
 
-	// DB_MIGRATOR = DB.Migrator()
+	SQLDb, _ = DB.DB()
 
-	fiberLogger.Info("Connection Opened to Database")
-	DB.AutoMigrate(&model.User{}, &model.Order{})
-	fiberLogger.Info("Database Migrated")
+	// Set the search_path to public
+	_, err = SQLDb.Exec("SET search_path TO public")
+	if err != nil {
+		return err
+	}
 
+	return nil
+}
+
+// MigrateDB to migrate db
+func MigrateDB() error {
+	if err := goose.SetDialect("postgres"); err != nil {
+		return err
+	}
+
+	if err := goose.Up(SQLDb, "internal/database/migrations"); err != nil && err != goose.ErrAlreadyApplied {
+		return err
+	}
+
+	log.Println("Database Migrated")
+
+	return nil
 }

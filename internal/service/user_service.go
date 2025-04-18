@@ -61,6 +61,7 @@ func (s *userService) GetUserByID(id string) (*model.UserResponse, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
+
 	return mapUserToResponse(user), nil
 }
 
@@ -69,6 +70,7 @@ func (s *userService) GetUserByEmail(req *model.GetUserByEmailRequest) (*model.U
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user: %w", err)
 	}
+
 	return mapUserToResponse(user), nil
 }
 

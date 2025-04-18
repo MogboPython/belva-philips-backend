@@ -28,7 +28,6 @@ func ParseTemplate(templateFileName string, data any) (string, error) {
 }
 
 func SendEmail(reciever, subject, body string) (bool, error) {
-
 	// Create a new message
 	message := gomail.NewMessage()
 	message.SetHeader("From", config.Config("PLUNK_EMAIL"))

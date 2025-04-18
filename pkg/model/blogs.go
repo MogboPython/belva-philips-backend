@@ -1,6 +1,6 @@
 package model
 
-import "gorm.io/gorm"
+// import "gorm.io/gorm"
 
 type PostResponse struct {
 	Title      string `json:"title"`
@@ -10,12 +10,12 @@ type PostResponse struct {
 	Status     string `json:"status"`
 }
 
-type Post struct {
-	gorm.Model
+// type Post struct {
+// 	gorm.Model
 
-	Title      string `gorm:"not null"`
-	Slug       string `gorm:"not null;unique"`
-	Content    string `gorm:"not null"`
-	CoverImage string `gorm:"not null"`
-	Status     string `gorm:"not null"`
-}
+// 	Title      string `gorm:"not null"`
+// 	Slug       string `gorm:"not null;unique"`
+// 	Content    string `gorm:"not null"`
+// 	CoverImage string `gorm:"not null"`
+// 	Status     string `gorm:"not null"`
+// }

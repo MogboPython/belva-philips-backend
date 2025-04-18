@@ -54,7 +54,7 @@ linters-settings:
       - '^context\.'  # will ignore hard coded numbers which are used alongside context, e.g: context.WithTimeout(context.Background(), 3*time.Second)
 
   govet:
-    check-shadowing: true
+    shadow: true
     enable:
       - fieldalignment
       - nilfunc
@@ -127,9 +127,9 @@ linters:
     - exhaustive
     - goconst
     - gocritic
-    # - godox # if enabled, will check lines for finding "todos", "bug" and "fixme" pharses
+    # - godox # if enabled, will check lines for finding "todos", "bug" and "fixme" phrases
     - gocyclo
-    - gomnd
+    - mnd
     - gosimple
     - gosec
     - govet  
@@ -143,7 +143,7 @@ linters:
     - wsl
     - revive 
     - bodyclose
-    - exportloopref
+    - copyloopvar
     - ineffassign
     - nolintlint
     - stylecheck
@@ -159,3 +159,7 @@ issues:
         - gocyclo
         - gosec
         - dupl
+  exclude-dirs:
+    - "cod"
+    - "cnd"
+    - "internal/database/migration.go"

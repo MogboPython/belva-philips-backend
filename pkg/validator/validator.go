@@ -13,16 +13,19 @@ type Validator struct {
 	validate *validator.Validate
 }
 
+const splitInt = 2
+
 // New creates a new validator
 func New() *Validator {
 	validate := validator.New()
 
 	// Register validation for struct fields
 	validate.RegisterTagNameFunc(func(fld reflect.StructField) string {
-		name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+		name := strings.SplitN(fld.Tag.Get("json"), ",", splitInt)[0]
 		if name == "-" {
 			return ""
 		}
+
 		return name
 	})
 
@@ -32,18 +35,23 @@ func New() *Validator {
 }
 
 // Validate validates the given struct
-func (v *Validator) Validate(i interface{}) error {
+func (v *Validator) Validate(i any) error {
 	if err := v.validate.Struct(i); err != nil {
 		var errors []string
 
-		for _, err := range err.(validator.ValidationErrors) {
+		validationErrors, ok := err.(validator.ValidationErrors)
+		if !ok {
+			return err
+		}
+
+		for _, err := range validationErrors {
 			var message string
 
 			switch err.Tag() {
 			case "required":
-				message = fmt.Sprintf("%s is required", err.Field())
+				message = err.Field() + " is required"
 			case "email":
-				message = fmt.Sprintf("%s must be a valid email", err.Field())
+				message = err.Field() + " must be a valid email"
 			case "min":
 				message = fmt.Sprintf("%s must be at least %s characters", err.Field(), err.Param())
 			case "max":

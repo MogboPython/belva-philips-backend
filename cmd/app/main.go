@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	_ "github.com/MogboPython/belvaphilips_backend/cmd/app/docs"
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"github.com/MogboPython/belvaphilips_backend/internal/database"
@@ -12,23 +10,22 @@ import (
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
 )
 
 // @title						Belva Philips Backend API
-// @version					1.0
-// @description				This is an backend API for Belva Philips website
-// @termsOfService				http://swagger.io/terms/
-// @host						localhost:8080
-// @BasePath					/
+// @version					    1.0
+// @description				    This is an backend API for Belva Philips website
 //
 // @securityDefinitions.apikey	BearerAuth
 // @in							header
 // @name						Authorization
 func main() {
 	app := fiber.New()
+	// TODO: use Zap
 	app.Use(logger.New(logger.Config{
 		Format:     "${cyan}[${time}] ${white}${pid} ${red}${status} ${blue}[${method}] ${white}${path}\n",
 		TimeFormat: "02-Jan-2006",
@@ -36,15 +33,15 @@ func main() {
 	}))
 	app.Use(cors.New())
 
-	// TODO: change to manual migrations
-	// Run migrations before connecting to the database
-	// if err := database.RunMigrations(); err != nil {
-	// 	log.Printf("Error running migrations: %v", err)
-	// }
+	if err := database.ConnectDB(); err != nil {
+		log.Errorf("Failed to connect to the database: %v", err)
+	}
 
-	database.ConnectDB()
+	if err := database.MigrateDB(); err != nil {
+		log.Errorf("Failed to migrate database: %v", err)
+	}
+
 	db := database.DB
-
 	// Initialize repository, service, and handler
 	userRepo := repository.NewUserRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
@@ -62,5 +59,7 @@ func main() {
 
 	router.SetupRoutes(app, userHandler, adminHandler, orderHandler)
 
-	app.Listen(fmt.Sprintf(":%s", config.Config("PORT")))
+	if err := app.Listen(":" + config.Config("PORT")); err != nil {
+		log.Fatalf("Server failed to start: %v", err)
+	}
 }

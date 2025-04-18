@@ -36,7 +36,7 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 //	@Success		201		{object}	model.ResponseHTTP{data=map[string]string}
 //	@Failure		400		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/user/token [post]
+//	@Router			/api/v1/users/token [post]
 func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
 	var payload model.TokenRequestPayload
 
@@ -232,6 +232,7 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 //	@Router			/api/v1/users/{id}/membership [put]
 func (h *UserHandler) UpdateMembershipStatus(c *fiber.Ctx) error {
 	id := c.Params("id")
+
 	var payload model.MembershipStatusChangeRequest
 
 	if err := c.BodyParser(&payload); err != nil {
