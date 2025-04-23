@@ -117,6 +117,7 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",
@@ -200,6 +201,7 @@ func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",
@@ -260,6 +262,7 @@ func (h *UserHandler) UpdateMembershipStatus(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",

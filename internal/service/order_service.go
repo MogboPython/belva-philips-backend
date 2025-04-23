@@ -2,7 +2,6 @@ package service
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
@@ -35,11 +34,6 @@ func NewOrderService(orderRepo repository.OrderRepository, userRepo repository.U
 }
 
 func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderResponse, error) {
-	// Validate common required fields
-	if request.UserEmail == "" || request.ProductName == "" || request.ShootType == "" {
-		return nil, errors.New("missing required fields: UserEmail, ProductName, or ShootType")
-	}
-
 	user, err := s.userRepo.GetByEmail(request.UserEmail)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find user: %w", err)

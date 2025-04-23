@@ -10,15 +10,18 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const noOfHours = 72
+
 func GenerateToken(id, role string) (string, error) {
 	claims := jwt.MapClaims{
 		"sessionId": id,
 		"role":      role,
-		"exp":       time.Now().Add(time.Hour * 72).Unix(),
+		"exp":       time.Now().Add(time.Hour * noOfHours).Unix(),
 	}
 
 	// Create token, sign and generate encoded token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	t, err := token.SignedString([]byte(config.Config("JWT_SECRET")))
 	if err != nil {
 		log.Error("Error signing token:", err)

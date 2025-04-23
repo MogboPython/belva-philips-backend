@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
@@ -34,10 +33,6 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 
 // CreateUser creates a new user
 func (s *userService) CreateUser(req *model.CreateUserRequest) (*model.UserResponse, error) {
-	if req == nil {
-		return nil, errors.New("invalid request")
-	}
-
 	user := &model.User{
 		Name:              req.Name,
 		Email:             req.Email,

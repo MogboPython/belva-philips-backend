@@ -134,6 +134,25 @@ definitions:
     required:
     - status
     type: object
+  model.PostResponse:
+    properties:
+      content:
+        type: string
+      cover_image:
+        type: string
+      created_at:
+        type: string
+      id:
+        type: string
+      slug:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updated_at:
+        type: string
+    type: object
   model.ResponseHTTP:
     properties:
       data: {}
@@ -512,6 +531,169 @@ paths:
       summary: Get order by User ID
       tags:
       - orders
+  /api/v1/posts:
+    get:
+      consumes:
+      - application/json
+      description: Fetch a paginated list of posts from the database
+      parameters:
+      - description: Page number (default is 1)
+        in: query
+        name: page
+        type: integer
+      - description: Number of posts per page (default is 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/model.ResponseHTTP'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/model.PostResponse'
+                    type: array
+                type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      summary: Get all published posts
+      tags:
+      - posts
+    post:
+      consumes:
+      - multipart/form-data
+      description: Create a new blog post with the provided information
+      parameters:
+      - description: Title of the post
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Slug of the post
+        in: formData
+        name: slug
+        required: true
+        type: string
+      - description: Content of the post
+        in: formData
+        name: content
+        required: true
+        type: string
+      - description: Status of the post (draft/published)
+        in: formData
+        name: status
+        required: true
+        type: string
+      - description: Cover image for the post
+        in: formData
+        name: cover_image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PostResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Create a new blog post (strictly for admin)
+      tags:
+      - posts
+  /api/v1/posts/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get post by ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PostResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      summary: Get post by ID
+      tags:
+      - posts
+  /api/v1/posts/drafts:
+    get:
+      consumes:
+      - application/json
+      description: Fetch a paginated list of posts from the database
+      parameters:
+      - description: Page number (default is 1)
+        in: query
+        name: page
+        type: integer
+      - description: Number of posts per page (default is 10)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              allOf:
+              - $ref: '#/definitions/model.ResponseHTTP'
+              - properties:
+                  data:
+                    items:
+                      $ref: '#/definitions/model.PostResponse'
+                    type: array
+                type: object
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      summary: Get all draft posts
+      tags:
+      - posts
   /api/v1/users:
     post:
       consumes:

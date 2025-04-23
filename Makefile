@@ -1,9 +1,10 @@
 include .env.development
 
-.PHONY: build run dev swagger lint migrate-status migrate-create migrate-create-sql migrate-up migrate-down help
+.PHONY: build run dev test swagger lint migrate-status migrate-create migrate-create-sql migrate-up migrate-down help
 # build run dev test clean swagger lint
 BINARY_NAME=belvaphilips_backend
 MIGRATIONS_DIR=./internal/database/migrations
+DB_DRIVER=postgres
 
 # Default target
 all: swagger build
@@ -25,9 +26,9 @@ dev:
 	~/go/bin/air -c .air.toml
 
 # Run tests
-# test:
-# 	@echo "Running tests..."
-# 	go test -v ./...
+test:
+	@echo "Running tests..."
+	go test -v ./...
 
 # Run tests with coverage
 # test-coverage:
@@ -78,12 +79,12 @@ migrate-create-sql: check-migration-name
 # Run database migrations up
 migrate-up:
 	@echo "Running migrations up..."
-	goose -dir ${MIGRATIONS_DIR} postgres "$(DIRECT_URL)" up
+	goose -dir ${MIGRATIONS_DIR} ${DB_DRIVER} "$(DIRECT_URL)" up
 
 # Run database migrations down
 migrate-down:
 	@echo "Running migrations down..."
-	goose -dir ${MIGRATIONS_DIR} postgres "$(DIRECT_URL)" down
+	goose -dir ${MIGRATIONS_DIR} ${DB_DRIVER} "$(DIRECT_URL)" down
 
 # Run linter
 lint:

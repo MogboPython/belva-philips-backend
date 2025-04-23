@@ -8,6 +8,7 @@ import (
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/internal/router"
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
+	_ "github.com/lib/pq"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/log"
@@ -17,8 +18,8 @@ import (
 )
 
 // @title						Belva Philips Backend API
-// @version					    1.0
-// @description				    This is an backend API for Belva Philips website
+// @version					1.0
+// @description				This is an backend API for Belva Philips website
 //
 // @securityDefinitions.apikey	BearerAuth
 // @in							header
@@ -45,6 +46,7 @@ func main() {
 	// Initialize repository, service, and handler
 	userRepo := repository.NewUserRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
+	postRepo := repository.NewPostRepository(db)
 
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
@@ -55,9 +57,12 @@ func main() {
 	orderService := service.NewOrderService(orderRepo, userRepo)
 	orderHandler := handler.NewOrderHandler(orderService)
 
+	postService := service.NewPostService(postRepo)
+	postHandler := handler.NewPostHandler(postService)
+
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
-	router.SetupRoutes(app, userHandler, adminHandler, orderHandler)
+	router.SetupRoutes(app, userHandler, adminHandler, orderHandler, postHandler)
 
 	if err := app.Listen(":" + config.Config("PORT")); err != nil {
 		log.Fatalf("Server failed to start: %v", err)

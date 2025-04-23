@@ -20,11 +20,13 @@ type AdminService interface {
 
 type adminService struct {
 	userRepo repository.UserRepository
+	// postRepo repository.PostRepository
 }
 
 func NewAdminService(userRepo repository.UserRepository) AdminService {
 	return &adminService{
 		userRepo: userRepo,
+		// postRepo: postRepo,
 	}
 }
 

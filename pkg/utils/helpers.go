@@ -7,7 +7,7 @@ const (
 	LIMIT = 10
 )
 
-func GetPageAndLimitInt(pageStr, limitStr string) (offset int, limit int) {
+func GetPageAndLimitInt(pageStr, limitStr string) (offset, limit int) {
 	page, err := strconv.Atoi(pageStr)
 	if err != nil || page < 1 {
 		page = PAGE

@@ -41,12 +41,6 @@ func ConnectDB() error {
 
 	SQLDb, _ = DB.DB()
 
-	// Set the search_path to public
-	_, err = SQLDb.Exec("SET search_path TO public")
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 

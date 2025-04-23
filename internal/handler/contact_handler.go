@@ -21,7 +21,8 @@ import (
 //	@Router			/api/v1/contact [post]
 func ContactUs(c *fiber.Ctx) error {
 	var req model.ContactUsRequest
-	validator := validator.New()
+
+	v := validator.New()
 
 	if err := c.BodyParser(&req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
@@ -31,7 +32,7 @@ func ContactUs(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := validator.Validate(req); err != nil {
+	if err := v.Validate(req); err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: err.Error(),

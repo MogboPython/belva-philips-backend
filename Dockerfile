@@ -12,8 +12,9 @@ WORKDIR /app
 
 COPY --from=builder /app/main main
 COPY /cmd/app/docs/* ./cmd/app/docs/
-COPY /.env ./
+
 COPY /internal/database/migrations ./internal/database/migrations
+COPY /templates ./templates
 
 
 EXPOSE 8080

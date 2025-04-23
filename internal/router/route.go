@@ -8,7 +8,7 @@ import (
 )
 
 // SetupRoutes func
-func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler *handler.AdminHandler, orderHandler *handler.OrderHandler) {
+func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler *handler.AdminHandler, orderHandler *handler.OrderHandler, postHandler *handler.PostHandler) {
 	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
@@ -45,6 +45,13 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 		order.Get("/:id", orderHandler.GetOrderByID)
 		order.Put("/:id/status", middleware.AdminRole(), orderHandler.UpdateOrderStatus)
 	}
+	{
+		post := api.Group("/posts/")
+		post.Post("/", middleware.Protected(), middleware.AdminRole(), postHandler.CreatePost)
+		post.Get("/", postHandler.GetAllPosts)
+		post.Get("/drafts", middleware.Protected(), middleware.AdminRole(), postHandler.GetAllDraftPosts)
+		post.Get("/:id", postHandler.GetPostByID)
+	}
 
 	// handle unavailable route
 	app.Use(func(c *fiber.Ctx) error {
@@ -52,5 +59,6 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	})
 }
 
+// order.Put("/:id/status", middleware.AdminRole(), orderHandler.UpdateOrderStatus)
 // v1.Get("/:id", middleware.Protected(), userHandler.GetUserByID)
 // v1.Put("/:id", handler.UpdateUser)

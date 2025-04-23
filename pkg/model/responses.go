@@ -6,12 +6,14 @@ import (
 
 // ResponseHTTP represents response body of this API
 type ResponseHTTP struct {
-	Success bool   `json:"success"`
 	Data    any    `json:"data"`
 	Message string `json:"message"`
+	Success bool   `json:"success"`
 }
 
 type UserResponse struct {
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 	ID                string    `json:"id"`
 	Name              string    `json:"name"`
 	Email             string    `json:"email"`
@@ -19,25 +21,34 @@ type UserResponse struct {
 	Phone             string    `json:"phone_number"`
 	PreferredMode     string    `json:"preferred_mode_of_communication"`
 	WantToReceiveText bool      `json:"want_to_receive_text"`
-	CreatedAt         time.Time `json:"created_at"`
-	UpdatedAt         time.Time `json:"updated_at"`
 }
 
 type OrderResponse struct {
+	CreatedAt               time.Time      `json:"created_at"`
+	UpdatedAt               time.Time      `json:"updated_at"`
+	ProductDescription      string         `gorm:"type:text" json:"product_description"`
+	ProductDescriptionImage string         `json:"product_description_image,omitempty"`
 	ID                      string         `json:"id"`
 	UserID                  string         `json:"user_id"`
 	UserEmail               string         `json:"user_email"`
 	UserMembershipStatus    string         `json:"user_membership_status"`
 	ProductName             string         `json:"product_name"`
-	ProductDescription      string         `gorm:"type:text" json:"product_description"`
-	ProductDescriptionImage string         `json:"product_description_image,omitempty"`
 	ShootType               string         `json:"shoot_type"`
 	FinishType              string         `json:"finish_type"`
-	Quantity                int            `json:"quantity"`
-	Details                 map[string]any `json:"details"`
-	Shots                   []string       `json:"shots"`
 	DeliverySpeed           string         `json:"delivery_speed"`
 	Status                  string         `json:"status"`
-	CreatedAt               time.Time      `json:"created_at"`
-	UpdatedAt               time.Time      `json:"updated_at"`
+	Details                 map[string]any `json:"details"`
+	Shots                   []string       `json:"shots"`
+	Quantity                int            `json:"quantity"`
+}
+
+type PostResponse struct {
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
+	Title      string    `json:"title"`
+	Slug       string    `json:"slug"`
+	Content    string    `json:"content"`
+	CoverImage string    `json:"cover_image"`
+	Status     string    `json:"status"`
+	ID         string    `json:"id"`
 }

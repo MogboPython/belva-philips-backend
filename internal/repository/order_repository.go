@@ -12,7 +12,7 @@ type OrderRepository interface {
 	GetByOrderID(orderID string) (*model.Order, error)
 	GetByUserID(userID string, offset, limit int) ([]*model.Order, error)
 	UpdateOrder(orderID, status string) (*model.Order, error)
-	GetAll(page, limit int) ([]*model.Order, error)
+	GetAll(offset, limit int) ([]*model.Order, error)
 	// Delete(id int64) error
 }
 
@@ -30,6 +30,7 @@ func (r *orderRepository) Create(order *model.Order) error {
 	if err := r.db.Create(&order).Error; err != nil {
 		return err
 	}
+
 	return r.db.Model(&order).Association("User").Find(&order.User)
 }
 

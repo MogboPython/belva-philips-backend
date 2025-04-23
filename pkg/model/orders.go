@@ -8,21 +8,21 @@ import (
 )
 
 type Order struct {
+	CreatedAt               time.Time      `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt               time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
+	User                    User           `gorm:"foreignKey:UserID" json:"user"`
 	ID                      string         `gorm:"default:uuid_generate_v4()" json:"id"`
 	UserID                  string         `gorm:"not null" json:"user_id"`
-	User                    User           `gorm:"foreignKey:UserID" json:"user"`
 	ProductName             string         `gorm:"not null" json:"product_name"`
 	ProductDescription      string         `gorm:"type:text" json:"product_description"`
 	ProductDescriptionImage string         `json:"product_description_image,omitempty"`
 	ShootType               string         `gorm:"not null" json:"shoot_type"`
 	FinishType              string         `json:"finish_type"`
-	Quantity                int            `gorm:"not null" json:"quantity"`
-	Details                 datatypes.JSON `gorm:"type:jsonb" json:"details"`
-	Shots                   pq.StringArray `gorm:"type:text[]" json:"shots"`
 	DeliverySpeed           string         `gorm:"default:Standard" json:"delivery_speed"`
 	Status                  string         `gorm:"default:QUOTE RECEIVED" json:"status"`
-	CreatedAt               time.Time      `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt               time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
+	Details                 datatypes.JSON `gorm:"type:jsonb" json:"details"`
+	Shots                   pq.StringArray `gorm:"type:text[]" json:"shots"`
+	Quantity                int            `gorm:"not null" json:"quantity"`
 }
 
 type OrderRequest struct {
@@ -30,12 +30,12 @@ type OrderRequest struct {
 	ProductName        string         `json:"product_name" validate:"required"`
 	ProductDescription string         `json:"product_description" validate:"required"`
 	ShootType          string         `json:"shoot_type" validate:"required"`
-	Details            map[string]any `json:"details" validate:"omitempty"`
 	FinishType         string         `json:"finish_type" validate:"omitempty"`
-	Quantity           int            `json:"quantity" validate:"omitempty"`
-	Shots              []string       `json:"shots" validate:"omitempty"`
 	DeliverySpeed      string         `json:"delivery_speed" validate:"omitempty"`
 	Status             string         `json:"status" validate:"omitempty"`
+	Details            map[string]any `json:"details" validate:"omitempty"`
+	Shots              []string       `json:"shots" validate:"omitempty"`
+	Quantity           int            `json:"quantity" validate:"omitempty"`
 }
 
 type OrderStatusChangeRequest struct {

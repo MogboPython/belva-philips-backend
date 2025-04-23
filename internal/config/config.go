@@ -5,6 +5,7 @@ import (
 
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/joho/godotenv"
+	storage "github.com/supabase-community/storage-go"
 )
 
 // Config func to get env value
@@ -17,10 +18,10 @@ func Config(key string) string {
 	return os.Getenv(key)
 }
 
-// load .env file
-// env := os.Getenv("ENV")
-// if env == "" {
-// 	env = "development"
-// }
-// envFile := ".env." + env
-// envFile
+func CreateStorageClient() *storage.Client {
+	return storage.NewClient(
+		Config("SUPABASE_URL"),
+		Config("SUPABASE_API_KEY"),
+		nil,
+	)
+}

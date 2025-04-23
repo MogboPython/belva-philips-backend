@@ -12,6 +12,8 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/lib/pq v1.10.9
 	github.com/pressly/goose/v3 v3.24.2
+	github.com/stretchr/testify v1.10.0
+	github.com/supabase-community/storage-go v0.7.0
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/crypto v0.37.0
 	gopkg.in/mail.v2 v2.3.1
@@ -21,6 +23,7 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
@@ -28,6 +31,7 @@ require (
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.27 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sethvargo/go-retry v0.3.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	golang.org/x/net v0.39.0 // indirect
@@ -51,7 +55,7 @@ require (
 	github.com/go-openapi/strfmt v0.21.8 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/go-openapi/validate v0.22.3 // indirect
-	github.com/google/uuid v1.6.0 // indirect
+	github.com/google/uuid v1.6.0
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.4 // indirect

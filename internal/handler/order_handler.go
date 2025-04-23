@@ -134,6 +134,7 @@ func (h *OrderHandler) GetOrderByID(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",
@@ -166,11 +167,11 @@ func (h *OrderHandler) GetOrderByID(c *fiber.Ctx) error {
 //	@Failure		500		{object}	model.ResponseHTTP{}
 //	@Router			/api/v1/orders/user/{userId} [get]
 func (h *OrderHandler) GetOrdersByUserID(c *fiber.Ctx) error {
-	user_id := c.Params("userId")
+	userID := c.Params("userId")
 	pageStr := c.Query("page", "1")
 	limitStr := c.Query("limit", "10")
 
-	orders, err := h.orderService.GetOrdersByUserID(user_id, pageStr, limitStr)
+	orders, err := h.orderService.GetOrdersByUserID(userID, pageStr, limitStr)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
@@ -204,6 +205,7 @@ func (h *OrderHandler) GetOrdersByUserID(c *fiber.Ctx) error {
 //	@Router			/api/v1/orders/{id}/status [put]
 func (h *OrderHandler) UpdateOrderStatus(c *fiber.Ctx) error {
 	id := c.Params("id")
+
 	var payload model.OrderStatusChangeRequest
 
 	if err := c.BodyParser(&payload); err != nil {
@@ -231,6 +233,7 @@ func (h *OrderHandler) UpdateOrderStatus(c *fiber.Ctx) error {
 				Data:    nil,
 			})
 		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",

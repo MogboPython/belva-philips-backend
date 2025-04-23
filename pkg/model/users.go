@@ -7,16 +7,18 @@ type GetUserByEmailRequest struct {
 }
 
 type User struct {
-	ID                string    `gorm:"default:uuid_generate_v4()" json:"id"`
-	Name              string    `gorm:"not null" json:"name"`
-	Email             string    `gorm:"not null;unique" json:"email"`
-	CompanyName       string    `gorm:"not null" json:"company_name"`
-	Phone             string    `gorm:"not null" json:"phone_number"`
-	PreferredMode     string    `gorm:"not null" json:"preferred_mode_of_communication"`
-	WantToReceiveText bool      `gorm:"default:FALSE" json:"want_to_receive_text"`
-	MembershipStatus  string    `gorm:"default:PAYG" json:"membership_status"`
-	CreatedAt         time.Time `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt         time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+
+	ID               string `gorm:"default:uuid_generate_v4()" json:"id"`
+	Name             string `gorm:"not null" json:"name"`
+	Email            string `gorm:"not null;unique" json:"email"`
+	CompanyName      string `gorm:"not null" json:"company_name"`
+	Phone            string `gorm:"not null" json:"phone_number"`
+	PreferredMode    string `gorm:"not null" json:"preferred_mode_of_communication"`
+	MembershipStatus string `gorm:"default:PAYG" json:"membership_status"`
+
+	WantToReceiveText bool `gorm:"default:FALSE" json:"want_to_receive_text"`
 }
 
 type CreateUserRequest struct {
