@@ -33,6 +33,8 @@ cod/
 db/
 internal/database/migration.go
 internal/database/migrations/20250416030455.sql
+fly.toml
 test.png
+.github/
 
 .dockerignore
