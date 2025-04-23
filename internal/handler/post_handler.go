@@ -111,7 +111,7 @@ func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 
 // GetAllDraftPosts is a function to get all draft post data from the database
 //
-//	@Summary		Get all draft posts
+//	@Summary		Get all draft posts (strictly for admin)
 //	@Description	Fetch a paginated list of posts from the database
 //	@Tags			posts
 //	@Accept			json
