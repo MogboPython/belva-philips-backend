@@ -138,6 +138,8 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 //	@Failure		404		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
 //	@Router			/api/v1/users/get_user [get]
+//
+// TODO: remove
 func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
 	var payload model.GetUserByEmailRequest
 

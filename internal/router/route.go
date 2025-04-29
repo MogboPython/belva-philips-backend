@@ -26,10 +26,10 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	api.Post("/admin/login", adminHandler.AdminLogin)
 	api.Post("/contact", handler.ContactUs)
 	{
-		user := api.Group("/users")
-		user.Get("/get_user", middleware.Protected(), userHandler.GetUserByEmail)
+		user := api.Group("/users", middleware.Protected())
+		user.Get("/get_user", userHandler.GetUserByEmail)
 		user.Get("/:id", userHandler.GetUserByID)
-		user.Post("/", middleware.Protected(), userHandler.CreateUser)
+		user.Post("/", userHandler.CreateUser)
 		user.Put("/:id/membership", userHandler.UpdateMembershipStatus)
 	}
 	{
@@ -46,6 +46,7 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	}
 	{
 		post := api.Group("/posts/")
+		post.Post("/upload-image", middleware.Protected(), middleware.AdminRole(), postHandler.UploadImage)
 		post.Post("/", middleware.Protected(), middleware.AdminRole(), postHandler.CreatePost)
 		post.Get("/", postHandler.GetAllPosts)
 		post.Get("/drafts", middleware.Protected(), middleware.AdminRole(), postHandler.GetAllDraftPosts)

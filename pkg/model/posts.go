@@ -23,3 +23,12 @@ type Post struct {
 	CoverImage string    `json:"cover_image"`
 	Status     string    `gorm:"default:draft" json:"status"`
 }
+
+type UploadImageRequest struct {
+	Image *multipart.FileHeader `form:"image" validate:"required"`
+	Title string                `form:"title" validate:"required"`
+}
+
+type DeleteImageRequest struct {
+	FileName string `json:"file_name"`
+}

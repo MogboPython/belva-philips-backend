@@ -52,3 +52,8 @@ type PostResponse struct {
 	Status     string    `json:"status"`
 	ID         string    `json:"id"`
 }
+
+type UploadImageResponse struct {
+	ImageURL string `json:"image_url"`
+	FileName string `json:"file_name"`
+}

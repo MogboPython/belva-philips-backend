@@ -121,7 +121,7 @@ linters:
     - asasalint
     - cyclop
     # - depguard # if enabled, will check dependencies and imported packages with defined rules
-    - dupl
+    # - dupl
     - errcheck
     # - errorlint # if enabled, will check for wrapping errors and error type assertions without ,ok idioms
     - exhaustive

@@ -58,7 +58,7 @@ func TestUploadAndRemoveImage(t *testing.T) {
 		bucketID := "blog-cover-photos"
 
 		imageFile := createMultipartFileHeader(t, filePath, contentType)
-		publicURL, err = uploadImage(imageFile, bucketID)
+		publicURL, err = uploadFile(imageFile, bucketID)
 
 		assert.NoError(t, err)
 		assert.NotEmpty(t, publicURL)
@@ -70,7 +70,7 @@ func TestUploadAndRemoveImage(t *testing.T) {
 			t.Fatal("publicURL is empty - upload test probably failed")
 		}
 
-		err := removeImage(publicURL)
+		err := removeFile(publicURL)
 
 		assert.NoError(t, err)
 	})

@@ -160,6 +160,13 @@ definitions:
       success:
         type: boolean
     type: object
+  model.UploadImageResponse:
+    properties:
+      file_name:
+        type: string
+      image_url:
+        type: string
+    type: object
   model.UserResponse:
     properties:
       company_name:
@@ -650,6 +657,47 @@ paths:
           schema:
             $ref: '#/definitions/model.ResponseHTTP'
       summary: Get all draft posts (strictly for admin)
+      tags:
+      - posts
+  /api/v1/posts/upload-image:
+    post:
+      consumes:
+      - multipart/form-data
+      description: Uploads an image for the post body
+      parameters:
+      - description: Title of the post
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Image to upload
+        in: formData
+        name: image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.UploadImageResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Uploads an image for the post body (strictly for admin)
       tags:
       - posts
   /api/v1/users:

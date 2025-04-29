@@ -18,7 +18,7 @@ type OrderService interface {
 	GetAllOrders(page, limit string) ([]*model.OrderResponse, error)
 	GetOrdersByUserID(userID, pageStr, limitStr string) ([]*model.OrderResponse, error)
 	UpdateOrderStatus(orderID string, request *model.OrderStatusChangeRequest) (*model.OrderResponse, error)
-	// DeleteUser(id int64) error
+	// TODO: DeleteOrder(id int64) error
 }
 
 type orderService struct {
@@ -131,21 +131,22 @@ func mapOrderToResponse(order *model.Order) *model.OrderResponse {
 	}
 
 	return &model.OrderResponse{
-		ID:                   order.ID,
-		UserID:               order.User.ID,
-		UserEmail:            order.User.Email,
-		UserMembershipStatus: order.User.MembershipStatus,
-		ProductName:          order.ProductName,
-		ProductDescription:   order.ProductDescription,
-		ShootType:            order.ShootType,
-		FinishType:           order.FinishType,
-		Quantity:             order.Quantity,
-		Details:              detailsMap,
-		Shots:                shotsStringArray,
-		DeliverySpeed:        order.DeliverySpeed,
-		Status:               order.Status,
-		CreatedAt:            order.CreatedAt,
-		UpdatedAt:            order.UpdatedAt,
+		ID:                      order.ID,
+		UserID:                  order.User.ID,
+		UserEmail:               order.User.Email,
+		UserMembershipStatus:    order.User.MembershipStatus,
+		ProductName:             order.ProductName,
+		ProductDescription:      order.ProductDescription,
+		ProductDescriptionImage: publicImageURL(order.ProductDescriptionFile),
+		ShootType:               order.ShootType,
+		FinishType:              order.FinishType,
+		Quantity:                order.Quantity,
+		Details:                 detailsMap,
+		Shots:                   shotsStringArray,
+		DeliverySpeed:           order.DeliverySpeed,
+		Status:                  order.Status,
+		CreatedAt:               order.CreatedAt,
+		UpdatedAt:               order.UpdatedAt,
 
 		// ProductDescriptionImage: order.ProductDescriptionImage,
 	}

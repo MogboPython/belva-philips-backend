@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"strconv"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -27,6 +28,13 @@ func GetPageAndLimitInt(pageStr, limitStr string) (offset, limit int) {
 	offset = (page - 1) * limit
 
 	return offset, limit
+}
+
+func ToSnakeCase(input string) string {
+	lower := strings.ToLower(input)
+	snake := strings.ReplaceAll(lower, " ", "_")
+
+	return snake
 }
 
 // ExistsByID checks if a record exists for the given model and ID.

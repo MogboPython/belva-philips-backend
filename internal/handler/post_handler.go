@@ -43,14 +43,21 @@ func NewPostHandler(postService service.PostService) *PostHandler {
 //	@Failure		500			{object}	model.ResponseHTTP{}
 //	@Router			/api/v1/posts [post]
 func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
-	var payload model.PostRequest
-
-	if err := c.BodyParser(&payload); err != nil {
+	form, err := c.MultipartForm()
+	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
-			Message: "Invalid request",
+			Message: "Invalid form-data request",
 			Data:    nil,
 		})
+	}
+
+	payload := model.PostRequest{
+		Title:      form.Value["title"][0],
+		Slug:       form.Value["slug"][0],
+		Content:    form.Value["content"][0],
+		Status:     form.Value["status"][0],
+		CoverImage: form.File["cover_image"][0],
 	}
 
 	if err := h.validator.Validate(payload); err != nil {
@@ -63,6 +70,22 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 
 	post, err := h.postService.CreatePost(&payload)
 	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Post with this slug/title exists",
+				Data:    nil,
+			})
+		}
+
+		if strings.Contains(err.Error(), "error uploading image") {
+			return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",
@@ -73,7 +96,7 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
 		Success: true,
 		Message: "Successfully saved post",
-		Data:    *&post,
+		Data:    *post,
 	})
 }
 
@@ -188,7 +211,65 @@ func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 	})
 }
 
-// validStatuses := map[string]bool{"draft": true, "published": true}
-// if !validStatuses[req] {
-// 	return nil, errors.New("invalid request")
-// }
+// UploadImage uploads an image for the post body
+//
+//	@Summary		Uploads an image for the post body (strictly for admin)
+//	@Description	Uploads an image for the post body
+//	@Tags			posts
+//
+//	@Security		BearerAuth
+//
+//	@Accept			multipart/form-data
+//	@Produce		json
+//	@Param			title	formData	string	true	"Title of the post"
+//	@Param			image	formData	file	true	"Image to upload"
+//	@Success		201		{object}	model.ResponseHTTP{data=model.UploadImageResponse}
+//	@Failure		400		{object}	model.ResponseHTTP{}
+//	@Failure		500		{object}	model.ResponseHTTP{}
+//	@Router			/api/v1/posts/upload-image [post]
+func (h *PostHandler) UploadImage(c *fiber.Ctx) error {
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Invalid form-data request",
+			Data:    nil,
+		})
+	}
+
+	payload := model.UploadImageRequest{
+		Title: form.Value["title"][0],
+		Image: form.File["image"][0],
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	image, err := h.postService.UploadImageFile(&payload)
+	if err != nil {
+		if strings.Contains(err.Error(), "error uploading image") {
+			return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: err.Error(),
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully uploaded image",
+		Data:    *image,
+	})
+}

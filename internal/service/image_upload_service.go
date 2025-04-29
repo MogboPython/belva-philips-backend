@@ -14,7 +14,7 @@ import (
 	storage "github.com/supabase-community/storage-go"
 )
 
-func uploadImage(imageFile *multipart.FileHeader, bucketID string) (string, error) {
+func uploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...string) (string, error) {
 	if imageFile == nil {
 		return "", nil
 	}
@@ -32,7 +32,14 @@ func uploadImage(imageFile *multipart.FileHeader, bucketID string) (string, erro
 	// Generate unique filename
 	uniqueID := uuid.New()
 	filename := strings.ReplaceAll(uniqueID.String(), "-", "")
-	imagePath := fmt.Sprintf("%s.%s", filename, fileExt)
+
+	// Determine path based on optional subPath parameter
+	var imagePath string
+	if len(subPath) > 0 && subPath[0] != "" {
+		imagePath = fmt.Sprintf("%s/%s.%s", subPath[0], filename, fileExt)
+	} else {
+		imagePath = fmt.Sprintf("%s.%s", filename, fileExt)
+	}
 
 	// Check file size (e.g., 5MB limit)
 	const maxFileSize = 5 * 1024 * 1024 // 5MB
@@ -42,15 +49,15 @@ func uploadImage(imageFile *multipart.FileHeader, bucketID string) (string, erro
 
 	// Check content type
 	contentType := imageFile.Header.Get("Content-Type")
-	if !strings.HasPrefix(contentType, "image/") {
-		return "", errors.New("file is not an image")
+	if !strings.HasPrefix(contentType, "image/") && contentType != "application/pdf" {
+		return "", errors.New("file is neither an image nor a PDF")
 	}
 
 	// Open the file
 	file, err := imageFile.Open()
 	if err != nil {
 		log.Error("Error opening file:", err)
-		return "", fmt.Errorf("error opening file: %w", err)
+		return "", errors.New("error opening file")
 	}
 	defer file.Close()
 
@@ -65,11 +72,25 @@ func uploadImage(imageFile *multipart.FileHeader, bucketID string) (string, erro
 	return result.Key, nil
 }
 
-func removeImage(file string) error {
+func removeFile(file string) error {
 	storageClient := config.CreateStorageClient()
 
-	bucketName := strings.Split(file, "/")[0]
-	fileName := strings.Split(file, "/")[1]
+	var bucketName, fileName string
+
+	const zero, one, two = 0, 1, 2
+
+	filePath := strings.Split(file, "/")
+	switch len(filePath) {
+	case two:
+		bucketName = filePath[0]
+		fileName = filePath[1]
+	case zero, one:
+		return errors.New("invalid file path")
+	default:
+		bucketName = filePath[0]
+		fileName = strings.Join(filePath[1:], "/")
+	}
+
 	_, err := storageClient.RemoveFile(bucketName, []string{fileName})
 
 	if err != nil {
@@ -81,7 +102,7 @@ func removeImage(file string) error {
 }
 
 // Constructs and returns the public URL of a image
-func PublicImageURL(imageName string) string {
+func publicImageURL(imageName string) string {
 	if imageName == "" {
 		return ""
 	}

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
@@ -14,6 +15,7 @@ type PostService interface {
 	GetPostByID(id string) (*model.PostResponse, error)
 	GetAllDrafts(pageStr, limitStr string) ([]*model.PostResponse, error)
 	GetAllPosts(page, limit string) ([]*model.PostResponse, error)
+	UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error)
 }
 
 type postService struct {
@@ -28,11 +30,11 @@ func NewPostService(postRepo repository.PostRepository) PostService {
 
 // CreatePost creates a new post
 func (s *postService) CreatePost(req *model.PostRequest) (*model.PostResponse, error) {
-	coverImageURL, err := uploadImage(req.CoverImage, "blog-cover-photos")
+	imageFolder := utils.ToSnakeCase(req.Title)
+	coverImageURL, err := uploadFile(req.CoverImage, "blog-cover-photos", imageFolder)
 
 	if err != nil {
-		log.Error("error uploading image: %v", err)
-		return nil, err
+		return nil, fmt.Errorf("error uploading image: %w", err)
 	}
 
 	post := &model.Post{
@@ -106,7 +108,7 @@ func (s *postService) UpdatePost(id string, req *model.PostRequest) (*model.Post
 
 	// TODO: Check if there was a cover image before then delete now
 
-	coverImageURL, err := uploadImage(req.CoverImage, "blog-cover-photos")
+	coverImageURL, err := uploadFile(req.CoverImage, "blog-cover-photos")
 
 	if err != nil {
 		log.Error("error uploading image: %v", err)
@@ -123,6 +125,45 @@ func (s *postService) UpdatePost(id string, req *model.PostRequest) (*model.Post
 	return mapPostToResponse(post), nil
 }
 
+func (*postService) UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error) {
+	// Validate file type
+	allowedTypes := map[string]bool{
+		"image/jpeg": true,
+		"image/png":  true,
+		"image/gif":  true,
+	}
+	if !allowedTypes[req.Image.Header.Get("Content-Type")] {
+		return nil, errors.New("error uploading image: Invalid file type. Only JPEG, PNG, and GIF are allowed")
+	}
+
+	imageFolder := utils.ToSnakeCase(req.Title)
+
+	// Upload the image to Supabase
+	fileName, err := uploadFile(req.Image, "blog-body-photos", imageFolder)
+	if err != nil {
+		log.Error("error uploading image: %v", err)
+		return nil, fmt.Errorf("error uploading image: %w", err)
+	}
+
+	// Get the public URL of the uploaded image
+	publicURL := publicImageURL(fileName)
+
+	return &model.UploadImageResponse{
+		ImageURL: publicURL,
+		FileName: fileName,
+	}, nil
+}
+
+func (*postService) DeleteImageFile(req *model.DeleteImageRequest) error {
+	// Delete the image to Supabase
+	if err := removeFile(req.FileName); err != nil {
+		log.Error("error deleting image: %v", err)
+		return errors.New("error deleting image")
+	}
+
+	return nil
+}
+
 // mapUserToResponse maps a user model to a user response
 func mapPostToResponse(post *model.Post) *model.PostResponse {
 	return &model.PostResponse{
@@ -130,7 +171,7 @@ func mapPostToResponse(post *model.Post) *model.PostResponse {
 		Title:      post.Title,
 		Slug:       post.Slug,
 		Content:    post.Content,
-		CoverImage: PublicImageURL(post.CoverImage),
+		CoverImage: publicImageURL(post.CoverImage),
 		Status:     post.Status,
 		CreatedAt:  post.CreatedAt,
 		UpdatedAt:  post.UpdatedAt,

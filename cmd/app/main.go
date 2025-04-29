@@ -18,8 +18,8 @@ import (
 )
 
 // @title						Belva Philips Backend API
-// @version					    1.0
-// @description				    This is an backend API for Belva Philips website
+// @version					1.0
+// @description				This is an backend API for Belva Philips website
 //
 // @securityDefinitions.apikey	BearerAuth
 // @in							header
@@ -31,6 +31,7 @@ func main() {
 		TimeFormat: "02-Jan-2006",
 		TimeZone:   "UTC",
 	}))
+	// TODO: allowed origins
 	app.Use(cors.New())
 
 	if err := database.ConnectDB(); err != nil {
