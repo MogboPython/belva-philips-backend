@@ -2,6 +2,7 @@ package handler
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
@@ -58,6 +59,14 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 
 	order, err := h.orderService.CreateOrder(&payload)
 	if err != nil {
+		if strings.Contains(err.Error(), "failed to find user") {
+			return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "User does not exists",
+				Data:    nil,
+			})
+		}
+
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Internal server error",
@@ -202,9 +211,9 @@ func (h *OrderHandler) GetOrdersByUserID(c *fiber.Ctx) error {
 //	@Success		200		{object}	model.ResponseHTTP{data=model.OrderResponse}
 //	@Failure		404		{object}	model.ResponseHTTP{}
 //	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/orders/{id}/status [put]
+//	@Router			/api/v1/orders/{order_id}/status [put]
 func (h *OrderHandler) UpdateOrderStatus(c *fiber.Ctx) error {
-	id := c.Params("id")
+	id := c.Params("order_id")
 
 	var payload model.OrderStatusChangeRequest
 

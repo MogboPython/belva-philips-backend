@@ -6,7 +6,6 @@ import (
 
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
-	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"github.com/MogboPython/belvaphilips_backend/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -22,56 +21,6 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 		userService: userService,
 		validator:   validator.New(),
 	}
-}
-
-// TODO: remove this from swagger
-// CreateUserAccessToken creates a authorization token for an authenticated user
-//
-//	@Summary		Create a authorization token
-//	@Description	Create a new authorization token with the provided information
-//	@Tags			users
-//	@Accept			json
-//	@Produce		json
-//	@Param			request	body		model.TokenRequestPayload	true	"User information"
-//	@Success		201		{object}	model.ResponseHTTP{data=map[string]string}
-//	@Failure		400		{object}	model.ResponseHTTP{}
-//	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/users/token [post]
-func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
-	var payload model.TokenRequestPayload
-
-	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
-			Success: false,
-			Message: "Invalid request",
-			Data:    nil,
-		})
-	}
-
-	if err := h.validator.Validate(payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
-			Success: false,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	token, err := utils.GenerateToken(payload.UserSessionID, "authenticated")
-	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
-			Success: false,
-			Message: "Error generating access token",
-			Data:    nil,
-		})
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
-		Success: true,
-		Message: "Success get access token",
-		Data: map[string]string{
-			"access_token": token,
-		},
-	})
 }
 
 // CreateUser creates a new user
@@ -132,31 +81,47 @@ func (h *UserHandler) CreateUser(c *fiber.Ctx) error {
 	})
 }
 
-// func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
-// 	id := c.Params("id")
+// GetUserByID is a function to get a user by ID
+//
+//	@Summary		Get user by ID
+//	@Description	Get user by ID
+//	@Tags			users
+//
+//	@Security		BearerAuth
+//
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"User ID"
+//	@Success		200	{object}	model.ResponseHTTP{data=model.UserResponse}
+//	@Failure		404	{object}	model.ResponseHTTP{}
+//	@Failure		500	{object}	model.ResponseHTTP{}
+//	@Router			/api/v1/users/{id} [get]
+func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
+	id := c.Params("id")
 
-// 	user, err := h.userService.GetUserByID(id)
-// 	if err != nil {
-// 		if errors.Is(err, gorm.ErrRecordNotFound) {
-// 			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
-// 				Success: false,
-// 				Message: "User not found",
-// 				Data:    nil,
-// 			})
-// 		}
-// 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
-// 			Success: false,
-// 			Message: "Internal server error",
-// 			Data:    nil,
-// 		})
-// 	}
+	user, err := h.userService.GetUserByID(id)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "User not found",
+				Data:    nil,
+			})
+		}
 
-// 	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
-// 		Success: true,
-// 		Message: "Successfully found user.",
-// 		Data:    *user,
-// 	})
-// }
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully found user.",
+		Data:    *user,
+	})
+}
 
 // GetUserByEmail is a function to get a user by Email
 //

@@ -18,15 +18,14 @@ import (
 )
 
 // @title						Belva Philips Backend API
-// @version					1.0
-// @description				This is an backend API for Belva Philips website
+// @version					    1.0
+// @description				    This is an backend API for Belva Philips website
 //
 // @securityDefinitions.apikey	BearerAuth
 // @in							header
 // @name						Authorization
 func main() {
 	app := fiber.New()
-	// TODO: use Zap
 	app.Use(logger.New(logger.Config{
 		Format:     "${cyan}[${time}] ${white}${pid} ${red}${status} ${blue}[${method}] ${white}${path}\n",
 		TimeFormat: "02-Jan-2006",
@@ -54,7 +53,7 @@ func main() {
 	adminService := service.NewAdminService(userRepo)
 	adminHandler := handler.NewAdminHandler(adminService)
 
-	orderService := service.NewOrderService(orderRepo, userRepo)
+	orderService := service.NewOrderService(orderRepo)
 	orderHandler := handler.NewOrderHandler(orderService)
 
 	postService := service.NewPostService(postRepo)

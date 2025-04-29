@@ -1,14 +1,12 @@
 package handler
 
 import (
-	"errors"
 	"strings"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/validator"
 	"github.com/gofiber/fiber/v2"
-	"gorm.io/gorm"
 )
 
 type AdminHandler struct {
@@ -112,47 +110,5 @@ func (h *AdminHandler) GetAllUsers(c *fiber.Ctx) error {
 		Success: true,
 		Message: "Successfully retrieved users.",
 		Data:    users,
-	})
-}
-
-// GetUserByID is a function to get a user by ID
-//
-//	@Summary		Get user by ID
-//	@Description	Get user by ID
-//	@Tags			admin
-//
-//	@Security		BearerAuth
-//
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	path		string	true	"User ID"
-//	@Success		200	{object}	model.ResponseHTTP{data=model.UserResponse}
-//	@Failure		404	{object}	model.ResponseHTTP{}
-//	@Failure		500	{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/admin/user/{id} [get]
-func (h *AdminHandler) GetUserByID(c *fiber.Ctx) error {
-	id := c.Params("id")
-
-	user, err := h.adminService.GetUserByID(id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
-				Success: false,
-				Message: "User not found",
-				Data:    nil,
-			})
-		}
-
-		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
-			Success: false,
-			Message: "Internal server error",
-			Data:    nil,
-		})
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
-		Success: true,
-		Message: "Successfully found user.",
-		Data:    *user,
 	})
 }

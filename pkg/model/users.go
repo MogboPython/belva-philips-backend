@@ -7,27 +7,22 @@ type GetUserByEmailRequest struct {
 }
 
 type User struct {
-	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
-	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
-
-	ID               string `gorm:"default:uuid_generate_v4()" json:"id"`
-	Name             string `gorm:"not null" json:"name"`
-	Email            string `gorm:"not null;unique" json:"email"`
-	CompanyName      string `gorm:"not null" json:"company_name"`
-	Phone            string `gorm:"not null" json:"phone_number"`
-	PreferredMode    string `gorm:"not null" json:"preferred_mode_of_communication"`
-	MembershipStatus string `gorm:"default:PAYG" json:"membership_status"`
-
-	WantToReceiveText bool `gorm:"default:FALSE" json:"want_to_receive_text"`
+	CreatedAt        time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt        time.Time `gorm:"autoUpdateTime" json:"updated_at"`
+	ID               string    `gorm:"default:uuid_generate_v4()" json:"id"`
+	Name             string    `gorm:"not null" json:"name"`
+	Email            string    `gorm:"not null;unique" json:"email"`
+	CompanyName      string    `gorm:"not null" json:"company_name"`
+	Phone            string    `gorm:"not null" json:"phone_number"`
+	MembershipStatus string    `gorm:"default:PAYG" json:"membership_status"`
 }
 
 type CreateUserRequest struct {
-	Name              string `json:"name" validate:"required"`
-	Email             string `json:"email" validate:"required,email"`
-	CompanyName       string `json:"company_name" validate:"omitempty"`
-	Phone             string `json:"phone_number" validate:"required"`
-	PreferredMode     string `json:"preferred_mode_of_communication" validate:"omitempty"`
-	WantToReceiveText bool   `json:"want_to_receive_text" validate:"omitempty"`
+	ID          string `json:"id" validate:"required"`
+	Name        string `json:"name" validate:"required"`
+	Email       string `json:"email" validate:"required,email"`
+	CompanyName string `json:"company_name" validate:"omitempty"`
+	Phone       string `json:"phone_number" validate:"required"`
 }
 
 type MembershipStatusChangeRequest struct {

@@ -14,19 +14,16 @@ import (
 
 type AdminService interface {
 	Login(req *model.AdminLoginRequest) (string, error)
-	GetUserByID(id string) (*model.UserResponse, error)
 	GetAllUsers(page, limit string) ([]*model.UserResponse, error)
 }
 
 type adminService struct {
 	userRepo repository.UserRepository
-	// postRepo repository.PostRepository
 }
 
 func NewAdminService(userRepo repository.UserRepository) AdminService {
 	return &adminService{
 		userRepo: userRepo,
-		// postRepo: postRepo,
 	}
 }
 
@@ -35,10 +32,6 @@ func (*adminService) Login(req *model.AdminLoginRequest) (string, error) {
 	if (req.Username != config.Config("ADMIN_USERNAME_HASH")) || (req.Password != config.Config("ADMIN_PASSWORD_HASH")) {
 		return "", errors.New("incorrect username or password")
 	}
-	// FIXME: fix password ish
-	// if !utils.CheckPasswordHash(req.Username, config.Config("ADMIN_USERNAME_HASH")) || !utils.CheckPasswordHash(req.Password, config.Config("ADMIN_PASSWORD_HASH")) {
-	// 	return "", errors.New("incorrect username or password")
-	// }
 
 	token, err := utils.GenerateToken("AdminSession", "admin")
 	if err != nil {
@@ -47,16 +40,6 @@ func (*adminService) Login(req *model.AdminLoginRequest) (string, error) {
 	}
 
 	return token, nil
-}
-
-// GetUserByID retrieves a user by ID
-func (s *adminService) GetUserByID(id string) (*model.UserResponse, error) {
-	user, err := s.userRepo.GetByID(id)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-
-	return mapUserToResponse(user), nil
 }
 
 // GetAllUsers retrieves all users

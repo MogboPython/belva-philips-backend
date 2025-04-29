@@ -34,12 +34,11 @@ func NewUserService(userRepo repository.UserRepository) UserService {
 // CreateUser creates a new user
 func (s *userService) CreateUser(req *model.CreateUserRequest) (*model.UserResponse, error) {
 	user := &model.User{
-		Name:              req.Name,
-		Email:             req.Email,
-		Phone:             req.Phone,
-		CompanyName:       req.CompanyName,
-		PreferredMode:     req.PreferredMode,
-		WantToReceiveText: req.WantToReceiveText,
+		ID:          req.ID,
+		Name:        req.Name,
+		Email:       req.Email,
+		Phone:       req.Phone,
+		CompanyName: req.CompanyName,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
@@ -115,14 +114,12 @@ func (s *userService) UpdateUserMembershipStatusChange(userID string, request *m
 // mapUserToResponse maps a user model to a user response
 func mapUserToResponse(user *model.User) *model.UserResponse {
 	return &model.UserResponse{
-		ID:                user.ID,
-		Name:              user.Name,
-		Email:             user.Email,
-		Phone:             user.Phone,
-		CompanyName:       user.CompanyName,
-		PreferredMode:     user.PreferredMode,
-		WantToReceiveText: user.WantToReceiveText,
-		CreatedAt:         user.CreatedAt,
-		UpdatedAt:         user.UpdatedAt,
+		ID:          user.ID,
+		Name:        user.Name,
+		Email:       user.Email,
+		Phone:       user.Phone,
+		CompanyName: user.CompanyName,
+		CreatedAt:   user.CreatedAt,
+		UpdatedAt:   user.UpdatedAt,
 	}
 }

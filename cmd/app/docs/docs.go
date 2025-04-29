@@ -142,67 +142,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/admin/user/{id}": {
-            "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Get user by ID",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "admin"
-                ],
-                "summary": "Get user by ID",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "User ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/model.ResponseHTTP"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/model.UserResponse"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/model.ResponseHTTP"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/model.ResponseHTTP"
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/contact": {
             "post": {
                 "description": "Submit contact form to notify admin",
@@ -509,7 +448,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/orders/{id}/status": {
+        "/api/v1/orders/{order_id}/status": {
             "put": {
                 "security": [
                     {
@@ -739,7 +678,7 @@ const docTemplate = `{
                 "tags": [
                     "posts"
                 ],
-                "summary": "Get all draft posts",
+                "summary": "Get all draft posts (strictly for admin)",
                 "parameters": [
                     {
                         "type": "integer",
@@ -970,9 +909,14 @@ const docTemplate = `{
                 }
             }
         },
-        "/api/v1/users/token": {
-            "post": {
-                "description": "Create a new authorization token with the provided information",
+        "/api/v1/users/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get user by ID",
                 "consumes": [
                     "application/json"
                 ],
@@ -982,21 +926,19 @@ const docTemplate = `{
                 "tags": [
                     "users"
                 ],
-                "summary": "Create a authorization token",
+                "summary": "Get user by ID",
                 "parameters": [
                     {
-                        "description": "User information",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/model.TokenRequestPayload"
-                        }
+                        "type": "string",
+                        "description": "User ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "allOf": [
                                 {
@@ -1006,18 +948,15 @@ const docTemplate = `{
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "type": "object",
-                                            "additionalProperties": {
-                                                "type": "string"
-                                            }
+                                            "$ref": "#/definitions/model.UserResponse"
                                         }
                                     }
                                 }
                             ]
                         }
                     },
-                    "400": {
-                        "description": "Bad Request",
+                    "404": {
+                        "description": "Not Found",
                         "schema": {
                             "$ref": "#/definitions/model.ResponseHTTP"
                         }
@@ -1145,6 +1084,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
+                "id",
                 "name",
                 "phone_number"
             ],
@@ -1155,17 +1095,14 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 },
                 "phone_number": {
                     "type": "string"
-                },
-                "preferred_mode_of_communication": {
-                    "type": "string"
-                },
-                "want_to_receive_text": {
-                    "type": "boolean"
                 }
             }
         },
@@ -1197,7 +1134,7 @@ const docTemplate = `{
                 "product_description",
                 "product_name",
                 "shoot_type",
-                "user_email"
+                "user_id"
             ],
             "properties": {
                 "delivery_speed": {
@@ -1231,7 +1168,7 @@ const docTemplate = `{
                 "status": {
                     "type": "string"
                 },
-                "user_email": {
+                "user_id": {
                     "type": "string"
                 }
             }
@@ -1342,14 +1279,6 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
-                }
-            }
-        },
-        "model.TokenRequestPayload": {
-            "type": "object",
-            "properties": {
-                "sessionId": {
-                    "type": "string"
                 }
             }
         },

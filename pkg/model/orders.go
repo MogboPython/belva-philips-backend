@@ -26,7 +26,7 @@ type Order struct {
 }
 
 type OrderRequest struct {
-	UserEmail          string         `json:"user_email" validate:"required,email"`
+	UserID             string         `json:"user_id" validate:"required"`
 	ProductName        string         `json:"product_name" validate:"required"`
 	ProductDescription string         `json:"product_description" validate:"required"`
 	ShootType          string         `json:"shoot_type" validate:"required"`

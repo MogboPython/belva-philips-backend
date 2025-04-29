@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
+	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"gorm.io/gorm"
 )
 
@@ -27,6 +29,15 @@ func NewOrderRepository(db *gorm.DB) OrderRepository {
 }
 
 func (r *orderRepository) Create(order *model.Order) error {
+	exists, err := utils.ExistsByID(r.db, &model.User{}, order.UserID)
+	if err != nil {
+		return err
+	}
+
+	if !exists {
+		return errors.New("failed to find user")
+	}
+
 	if err := r.db.Create(&order).Error; err != nil {
 		return err
 	}

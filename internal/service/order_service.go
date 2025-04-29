@@ -23,22 +23,16 @@ type OrderService interface {
 
 type orderService struct {
 	orderRepo repository.OrderRepository
-	userRepo  repository.UserRepository
 }
 
-func NewOrderService(orderRepo repository.OrderRepository, userRepo repository.UserRepository) OrderService {
+func NewOrderService(orderRepo repository.OrderRepository) OrderService {
 	return &orderService{
 		orderRepo: orderRepo,
-		userRepo:  userRepo,
 	}
 }
 
+// CreateOrder creates a new order
 func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderResponse, error) {
-	user, err := s.userRepo.GetByEmail(request.UserEmail)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-
 	detailsBytes, err := json.Marshal(request.Details)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal details: %w", err)
@@ -50,7 +44,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 
 	// Create a new order
 	order := &model.Order{
-		UserID:             user.ID,
+		UserID:             request.UserID,
 		ProductName:        request.ProductName,
 		ProductDescription: request.ProductDescription,
 		Details:            detailsJSON,
@@ -64,7 +58,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 
 	// Save to database
 	if err := s.orderRepo.Create(order); err != nil {
-		log.Error("error saving user: %v", err)
+		log.Error("error saving user: %w", err)
 		return nil, err
 	}
 
