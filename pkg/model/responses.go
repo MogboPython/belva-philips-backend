@@ -24,22 +24,21 @@ type UserResponse struct {
 }
 
 type OrderResponse struct {
-	CreatedAt               time.Time      `json:"created_at"`
-	UpdatedAt               time.Time      `json:"updated_at"`
-	ProductDescription      string         `gorm:"type:text" json:"product_description"`
-	ProductDescriptionImage string         `json:"product_description_image,omitempty"`
-	ID                      string         `json:"id"`
-	UserID                  string         `json:"user_id"`
-	UserEmail               string         `json:"user_email"`
-	UserMembershipStatus    string         `json:"user_membership_status"`
-	ProductName             string         `json:"product_name"`
-	ShootType               string         `json:"shoot_type"`
-	FinishType              string         `json:"finish_type"`
-	DeliverySpeed           string         `json:"delivery_speed"`
-	Status                  string         `json:"status"`
-	Details                 map[string]any `json:"details"`
-	Shots                   []string       `json:"shots"`
-	Quantity                int            `json:"quantity"`
+	CreatedAt            time.Time      `json:"created_at"`
+	UpdatedAt            time.Time      `json:"updated_at"`
+	ProductDescription   string         `gorm:"type:text" json:"product_description"`
+	ID                   string         `json:"id"`
+	UserID               string         `json:"user_id"`
+	UserEmail            string         `json:"user_email"`
+	UserMembershipStatus string         `json:"user_membership_status"`
+	ProductName          string         `json:"product_name"`
+	ShootType            string         `json:"shoot_type"`
+	FinishType           string         `json:"finish_type"`
+	DeliverySpeed        string         `json:"delivery_speed"`
+	Status               string         `json:"status"`
+	Details              map[string]any `json:"details"`
+	Shots                []string       `json:"shots"`
+	Quantity             int            `json:"quantity"`
 }
 
 type PostResponse struct {

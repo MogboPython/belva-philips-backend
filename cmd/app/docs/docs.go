@@ -1263,9 +1263,6 @@ const docTemplate = `{
                 "product_description": {
                     "type": "string"
                 },
-                "product_description_image": {
-                    "type": "string"
-                },
                 "product_name": {
                     "type": "string"
                 },
