@@ -44,7 +44,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 
 	// Create a new order
 	order := &model.Order{
-		UserID:             request.UserID, //uuid.MustParse(request.UserID),
+		UserID:             request.UserID,
 		ProductName:        request.ProductName,
 		ProductDescription: request.ProductDescription,
 		Details:            detailsJSON,
@@ -83,7 +83,7 @@ func (s *orderService) GetAllOrders(pageStr, limitStr, status string) (model.Tot
 	}
 
 	totalOrderResponse.Orders = formattedOrderResponses
-	totalOrderResponse.OrderNumbers = model.OrdersCount(ordersCount)
+	totalOrderResponse.OrderNumbers = ordersCount
 
 	return totalOrderResponse, nil
 }
@@ -115,7 +115,7 @@ func (s *orderService) GetOrdersByUserID(userID, pageStr, limitStr string) ([]*m
 }
 
 func (s *orderService) UpdateOrderStatus(orderID string, request *model.OrderStatusChangeRequest) (*model.OrderResponse, error) {
-	order, err := s.orderRepo.UpdateOrder(orderID, request.Status)
+	order, err := s.orderRepo.Update(orderID, request.Status)
 	if err != nil {
 		return nil, fmt.Errorf("failed to update order: %w", err)
 	}

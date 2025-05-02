@@ -13,19 +13,13 @@ type OrderRepository interface {
 	Create(order *model.Order) error
 	GetByOrderID(orderID string) (*model.Order, error)
 	GetByUserID(userID string, offset, limit int) ([]*model.Order, error)
-	UpdateOrder(orderID, status string) (*model.Order, error)
-	GetAll(offset, limit int, status string) ([]*model.Order, OrdersCount, error)
+	Update(orderID, status string) (*model.Order, error)
+	GetAll(offset, limit int, status string) ([]*model.Order, model.OrdersCount, error)
 	// Delete(id int64) error
 }
 
 type orderRepository struct {
 	db *gorm.DB
-}
-
-type OrdersCount struct {
-	Total        int64
-	ActiveCount  int64
-	PendingCount int64
 }
 
 func NewOrderRepository(db *gorm.DB) OrderRepository {
@@ -62,29 +56,30 @@ func (r *orderRepository) GetByOrderID(orderID string) (*model.Order, error) {
 }
 
 // GetAll retrieves all orders
-func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Order, OrdersCount, error) {
+func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Order, model.OrdersCount, error) {
 	var orders []*model.Order
 
-	var count OrdersCount
+	var count model.OrdersCount
 
-	var query *gorm.DB
+	tx := r.db.Model(&model.Order{})
 
 	const (
-		statusActive = "QUOTE RECEIVED"
+		statusActive    = "QUOTE RECEIVED"
+		statusCompleted = "PROJECT COMPLETED"
 	)
 
 	// Building the query based on the status
 	switch status {
 	case "active":
-		query = r.db.Preload("User").Where("status = ?", statusActive)
+		tx = tx.Where("status = ?", statusActive)
+	case "completed":
+		tx = tx.Where("status = ?", statusCompleted)
 	case "pending":
-		query = r.db.Preload("User").Where("status != ?", statusActive)
-	default:
-		query = r.db.Preload("User")
+		tx = tx.Where("status != ? AND status != ?", statusActive, statusCompleted)
 	}
 
 	// Execute the query with pagination
-	if err := query.Offset(offset).Limit(limit).Find(&orders).Error; err != nil {
+	if err := tx.Preload("User").Offset(offset).Limit(limit).Find(&orders).Error; err != nil {
 		return nil, count, err
 	}
 
@@ -100,8 +95,13 @@ func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Ord
 			return err
 		}
 
+		// Get complete count
+		if err := tx.Model(&model.Order{}).Where("status = ?", statusCompleted).Count(&count.CompletedCount).Error; err != nil {
+			return err
+		}
+
 		// Calculate pending count
-		count.PendingCount = count.Total - count.ActiveCount
+		count.PendingCount = count.Total - count.ActiveCount - count.CompletedCount
 		return nil
 	}); err != nil {
 		return nil, count, err
@@ -121,7 +121,7 @@ func (r *orderRepository) GetByUserID(userID string, offset, limit int) ([]*mode
 	return orders, nil
 }
 
-func (r *orderRepository) UpdateOrder(orderID, status string) (*model.Order, error) {
+func (r *orderRepository) Update(orderID, status string) (*model.Order, error) {
 	var order model.Order
 
 	if err := r.db.Preload("User").Where("id = ?", orderID).First(&order).Error; err != nil {

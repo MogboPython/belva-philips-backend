@@ -8,9 +8,10 @@ import (
 )
 
 type OrdersCount struct {
-	Total        int64 `json:"total_orders"`
-	ActiveCount  int64 `json:"active_orders"`
-	PendingCount int64 `json:"pending_orders"`
+	Total          int64 `json:"total_orders"`
+	ActiveCount    int64 `json:"active_orders"`
+	PendingCount   int64 `json:"pending_orders"`
+	CompletedCount int64 `json:"completed_orders"`
 }
 
 type Order struct {
