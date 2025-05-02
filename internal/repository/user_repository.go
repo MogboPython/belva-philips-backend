@@ -12,7 +12,7 @@ type UserRepository interface {
 	Create(user *model.User) error
 	GetByID(id string) (*model.User, error)
 	GetByEmail(email string) (*model.User, error)
-	GetAll(page, limit int) ([]*model.User, error)
+	GetAll(offset, limit int) ([]*model.User, error)
 	UpdateMembership(userID, status string) (*model.User, error)
 	// Update(id int64, user *model.User) error
 	// Delete(id int64) error

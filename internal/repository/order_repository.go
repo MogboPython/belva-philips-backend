@@ -14,12 +14,18 @@ type OrderRepository interface {
 	GetByOrderID(orderID string) (*model.Order, error)
 	GetByUserID(userID string, offset, limit int) ([]*model.Order, error)
 	UpdateOrder(orderID, status string) (*model.Order, error)
-	GetAll(offset, limit int) ([]*model.Order, error)
+	GetAll(offset, limit int, status string) ([]*model.Order, OrdersCount, error)
 	// Delete(id int64) error
 }
 
 type orderRepository struct {
 	db *gorm.DB
+}
+
+type OrdersCount struct {
+	Total        int64
+	ActiveCount  int64
+	PendingCount int64
 }
 
 func NewOrderRepository(db *gorm.DB) OrderRepository {
@@ -56,16 +62,55 @@ func (r *orderRepository) GetByOrderID(orderID string) (*model.Order, error) {
 }
 
 // GetAll retrieves all orders
-func (r *orderRepository) GetAll(offset, limit int) ([]*model.Order, error) {
+func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Order, OrdersCount, error) {
 	var orders []*model.Order
 
-	if err := r.db.Preload("User").Offset(offset).Limit(limit).Find(&orders).Error; err != nil {
-		return nil, err
+	var count OrdersCount
+
+	var query *gorm.DB
+
+	const (
+		statusActive = "QUOTE RECEIVED"
+	)
+
+	// Building the query based on the status
+	switch status {
+	case "active":
+		query = r.db.Preload("User").Where("status = ?", statusActive)
+	case "pending":
+		query = r.db.Preload("User").Where("status != ?", statusActive)
+	default:
+		query = r.db.Preload("User")
 	}
 
-	return orders, nil
+	// Execute the query with pagination
+	if err := query.Offset(offset).Limit(limit).Find(&orders).Error; err != nil {
+		return nil, count, err
+	}
+
+	// Get all counts in one database transaction
+	if err := r.db.Transaction(func(tx *gorm.DB) error {
+		// Get total count
+		if err := tx.Model(&model.Order{}).Count(&count.Total).Error; err != nil {
+			return err
+		}
+
+		// Get active count
+		if err := tx.Model(&model.Order{}).Where("status = ?", statusActive).Count(&count.ActiveCount).Error; err != nil {
+			return err
+		}
+
+		// Calculate pending count
+		count.PendingCount = count.Total - count.ActiveCount
+		return nil
+	}); err != nil {
+		return nil, count, err
+	}
+
+	return orders, count, nil
 }
 
+// GetByUserID retrieves orders by user ID
 func (r *orderRepository) GetByUserID(userID string, offset, limit int) ([]*model.Order, error) {
 	var orders []*model.Order
 

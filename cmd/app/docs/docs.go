@@ -218,6 +218,12 @@ const docTemplate = `{
                         "description": "Number of orders per page (default is 10)",
                         "name": "limit",
                         "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "order status (active or pending)",
+                        "name": "status",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -236,7 +242,7 @@ const docTemplate = `{
                                             "data": {
                                                 "type": "array",
                                                 "items": {
-                                                    "$ref": "#/definitions/model.OrderResponse"
+                                                    "$ref": "#/definitions/model.TotalOrderResponse"
                                                 }
                                             }
                                         }
@@ -1306,6 +1312,20 @@ const docTemplate = `{
                 }
             }
         },
+        "model.OrdersCount": {
+            "type": "object",
+            "properties": {
+                "active_orders": {
+                    "type": "integer"
+                },
+                "pending_orders": {
+                    "type": "integer"
+                },
+                "total_orders": {
+                    "type": "integer"
+                }
+            }
+        },
         "model.PostResponse": {
             "type": "object",
             "properties": {
@@ -1344,6 +1364,20 @@ const docTemplate = `{
                 },
                 "success": {
                     "type": "boolean"
+                }
+            }
+        },
+        "model.TotalOrderResponse": {
+            "type": "object",
+            "properties": {
+                "orders": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.OrderResponse"
+                    }
+                },
+                "orders_count": {
+                    "$ref": "#/definitions/model.OrdersCount"
                 }
             }
         },

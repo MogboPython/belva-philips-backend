@@ -93,14 +93,16 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 //	@Produce		json
 //	@Param			page	query		int	false	"Page number (default is 1)"
 //	@Param			limit	query		int	false	"Number of orders per page (default is 10)"
-//	@Success		200		{array}		model.ResponseHTTP{data=[]model.OrderResponse}
+//	@Param			status	query		string	false	"order status (active or pending)"
+//	@Success		200		{array}		model.ResponseHTTP{data=[]model.TotalOrderResponse}
 //	@Failure		500		{object}	model.ResponseHTTP{}
 //	@Router			/api/v1/orders [get]
 func (h *OrderHandler) GetAllOrders(c *fiber.Ctx) error {
 	pageStr := c.Query("page", "1")
 	limitStr := c.Query("limit", "10")
+	status := c.Query("status", "")
 
-	orders, err := h.orderService.GetAllOrders(pageStr, limitStr)
+	orders, err := h.orderService.GetAllOrders(pageStr, limitStr, status)
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
 			Success: false,

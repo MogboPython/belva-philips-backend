@@ -131,6 +131,15 @@ definitions:
     required:
     - status
     type: object
+  model.OrdersCount:
+    properties:
+      active_orders:
+        type: integer
+      pending_orders:
+        type: integer
+      total_orders:
+        type: integer
+    type: object
   model.PostResponse:
     properties:
       content:
@@ -157,6 +166,15 @@ definitions:
         type: string
       success:
         type: boolean
+    type: object
+  model.TotalOrderResponse:
+    properties:
+      orders:
+        items:
+          $ref: '#/definitions/model.OrderResponse'
+        type: array
+      orders_count:
+        $ref: '#/definitions/model.OrdersCount'
     type: object
   model.UploadImageResponse:
     properties:
@@ -312,6 +330,10 @@ paths:
         in: query
         name: limit
         type: integer
+      - description: order status (active or pending)
+        in: query
+        name: status
+        type: string
       produces:
       - application/json
       responses:
@@ -324,7 +346,7 @@ paths:
               - properties:
                   data:
                     items:
-                      $ref: '#/definitions/model.OrderResponse'
+                      $ref: '#/definitions/model.TotalOrderResponse'
                     type: array
                 type: object
             type: array

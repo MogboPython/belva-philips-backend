@@ -41,6 +41,11 @@ type OrderResponse struct {
 	Quantity             int            `json:"quantity"`
 }
 
+type TotalOrderResponse struct {
+	Orders       []*OrderResponse `json:"orders"`
+	OrderNumbers OrdersCount      `json:"orders_count"`
+}
+
 type PostResponse struct {
 	CreatedAt  time.Time `json:"created_at"`
 	UpdatedAt  time.Time `json:"updated_at"`

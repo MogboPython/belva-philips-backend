@@ -15,7 +15,7 @@ import (
 type OrderService interface {
 	CreateOrder(req *model.OrderRequest) (*model.OrderResponse, error)
 	GetOrderByID(id string) (*model.OrderResponse, error)
-	GetAllOrders(page, limit string) ([]*model.OrderResponse, error)
+	GetAllOrders(page, limit, status string) (model.TotalOrderResponse, error)
 	GetOrdersByUserID(userID, pageStr, limitStr string) ([]*model.OrderResponse, error)
 	UpdateOrderStatus(orderID string, request *model.OrderStatusChangeRequest) (*model.OrderResponse, error)
 	// TODO: DeleteOrder(id int64) error
@@ -44,7 +44,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 
 	// Create a new order
 	order := &model.Order{
-		UserID:             request.UserID,
+		UserID:             request.UserID, //uuid.MustParse(request.UserID),
 		ProductName:        request.ProductName,
 		ProductDescription: request.ProductDescription,
 		Details:            detailsJSON,
@@ -58,7 +58,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 
 	// Save to database
 	if err := s.orderRepo.Create(order); err != nil {
-		log.Error("error saving user: %w", err)
+		log.Error("error saving order:", err)
 		return nil, err
 	}
 
@@ -66,21 +66,26 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 }
 
 // GetAllUsers retrieves all orders
-func (s *orderService) GetAllOrders(pageStr, limitStr string) ([]*model.OrderResponse, error) {
+func (s *orderService) GetAllOrders(pageStr, limitStr, status string) (model.TotalOrderResponse, error) {
+	var totalOrderResponse model.TotalOrderResponse
+
 	// Convert to integers
 	offset, limit := utils.GetPageAndLimitInt(pageStr, limitStr)
 
-	orders, err := s.orderRepo.GetAll(offset, limit)
+	orders, ordersCount, err := s.orderRepo.GetAll(offset, limit, status)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get orders: %w", err)
+		return totalOrderResponse, fmt.Errorf("failed to get orders: %w", err)
 	}
 
-	orderResponses := make([]*model.OrderResponse, len(orders))
+	formattedOrderResponses := make([]*model.OrderResponse, len(orders))
 	for i, order := range orders {
-		orderResponses[i] = mapOrderToResponse(order)
+		formattedOrderResponses[i] = mapOrderToResponse(order)
 	}
 
-	return orderResponses, nil
+	totalOrderResponse.Orders = formattedOrderResponses
+	totalOrderResponse.OrderNumbers = model.OrdersCount(ordersCount)
+
+	return totalOrderResponse, nil
 }
 
 // GetOrderByID retrieves an order by ID
@@ -146,7 +151,5 @@ func mapOrderToResponse(order *model.Order) *model.OrderResponse {
 		Status:               order.Status,
 		CreatedAt:            order.CreatedAt,
 		UpdatedAt:            order.UpdatedAt,
-
-		// ProductDescriptionImage: order.ProductDescriptionImage,
 	}
 }

@@ -39,7 +39,7 @@ func ToSnakeCase(input string) string {
 
 // ExistsByID checks if a record exists for the given model and ID.
 func ExistsByID(db *gorm.DB, model any, id string) (bool, error) {
-	err := db.First(model, id).Error
+	err := db.Where("id = ?", id).First(model).Error
 	if errors.Is(err, gorm.ErrRecordNotFound) {
 		return false, nil
 	}

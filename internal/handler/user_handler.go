@@ -6,6 +6,7 @@ import (
 
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
+	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"github.com/MogboPython/belvaphilips_backend/pkg/validator"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
@@ -21,6 +22,44 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 		userService: userService,
 		validator:   validator.New(),
 	}
+}
+
+// TODO: remove
+func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
+	var payload model.TokenRequestPayload
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Invalid request",
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	token, err := utils.GenerateToken(payload.UserSessionID, "authenticated")
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Error generating access token",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Success get access token",
+		Data: map[string]string{
+			"access_token": token,
+		},
+	})
 }
 
 // CreateUser creates a new user

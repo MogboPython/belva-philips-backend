@@ -25,6 +25,7 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	api := app.Group("/api/v1")
 	api.Post("/admin/login", adminHandler.AdminLogin)
 	api.Post("/contact", handler.ContactUs)
+	api.Post("/token", userHandler.CreateUserAccessToken)
 	{
 		user := api.Group("/users", middleware.Protected())
 		user.Get("/get_user", userHandler.GetUserByEmail)
@@ -38,18 +39,24 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	}
 	{
 		order := api.Group("/orders/", middleware.Protected())
-		order.Post("/", orderHandler.CreateOrder)
-		order.Get("/", middleware.AdminRole(), orderHandler.GetAllOrders)
+		// User-specific routes
 		order.Get("/user/:userId", orderHandler.GetOrdersByUserID)
-		order.Get("/:id", orderHandler.GetOrderByID)
+
+		// Admin-specific routes
+		order.Get("/", middleware.AdminRole(), orderHandler.GetAllOrders)
 		order.Put("/:order_id/status", middleware.AdminRole(), orderHandler.UpdateOrderStatus)
+
+		// General routes
+		order.Post("/", orderHandler.CreateOrder)
+		order.Get("/:id", orderHandler.GetOrderByID)
 	}
 	{
 		post := api.Group("/posts/")
 		post.Post("/upload-image", middleware.Protected(), middleware.AdminRole(), postHandler.UploadImage)
 		post.Post("/", middleware.Protected(), middleware.AdminRole(), postHandler.CreatePost)
-		post.Get("/", postHandler.GetAllPosts)
 		post.Get("/drafts", middleware.Protected(), middleware.AdminRole(), postHandler.GetAllDraftPosts)
+
+		post.Get("/", postHandler.GetAllPosts)
 		post.Get("/:id", postHandler.GetPostByID)
 	}
 
