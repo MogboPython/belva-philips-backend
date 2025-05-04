@@ -25,8 +25,8 @@ type Post struct {
 }
 
 type UploadImageRequest struct {
-	Image *multipart.FileHeader `form:"image" validate:"required"`
-	Title string                `form:"title" validate:"required"`
+	Image  *multipart.FileHeader `form:"image" validate:"required"`
+	PostID string                `form:"post_id" validate:"required"`
 }
 
 type DeleteImageRequest struct {

@@ -135,6 +135,8 @@ definitions:
     properties:
       active_orders:
         type: integer
+      completed_orders:
+        type: integer
       pending_orders:
         type: integer
       total_orders:
@@ -685,9 +687,9 @@ paths:
       - multipart/form-data
       description: Uploads an image for the post body
       parameters:
-      - description: Title of the post
+      - description: ID of the post
         in: formData
-        name: title
+        name: post_id
         required: true
         type: string
       - description: Image to upload

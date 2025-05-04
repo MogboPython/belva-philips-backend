@@ -221,7 +221,7 @@ func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 //
 //	@Accept			multipart/form-data
 //	@Produce		json
-//	@Param			title	formData	string	true	"Title of the post"
+//	@Param			post_id	formData	string	true	"ID of the post"
 //	@Param			image	formData	file	true	"Image to upload"
 //	@Success		201		{object}	model.ResponseHTTP{data=model.UploadImageResponse}
 //	@Failure		400		{object}	model.ResponseHTTP{}
@@ -238,8 +238,8 @@ func (h *PostHandler) UploadImage(c *fiber.Ctx) error {
 	}
 
 	payload := model.UploadImageRequest{
-		Title: form.Value["title"][0],
-		Image: form.File["image"][0],
+		PostID: form.Value["post_id"][0],
+		Image:  form.File["image"][0],
 	}
 
 	if err := h.validator.Validate(payload); err != nil {

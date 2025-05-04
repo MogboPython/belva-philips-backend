@@ -754,8 +754,8 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Title of the post",
-                        "name": "title",
+                        "description": "ID of the post",
+                        "name": "post_id",
                         "in": "formData",
                         "required": true
                     },
@@ -1316,6 +1316,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "active_orders": {
+                    "type": "integer"
+                },
+                "completed_orders": {
                     "type": "integer"
                 },
                 "pending_orders": {

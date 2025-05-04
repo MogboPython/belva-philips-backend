@@ -91,8 +91,8 @@ func (h *OrderHandler) CreateOrder(c *fiber.Ctx) error {
 //
 //	@Accept			json
 //	@Produce		json
-//	@Param			page	query		int	false	"Page number (default is 1)"
-//	@Param			limit	query		int	false	"Number of orders per page (default is 10)"
+//	@Param			page	query		int		false	"Page number (default is 1)"
+//	@Param			limit	query		int		false	"Number of orders per page (default is 10)"
 //	@Param			status	query		string	false	"order status (active or pending)"
 //	@Success		200		{array}		model.ResponseHTTP{data=[]model.TotalOrderResponse}
 //	@Failure		500		{object}	model.ResponseHTTP{}

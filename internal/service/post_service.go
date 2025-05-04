@@ -136,10 +136,8 @@ func (*postService) UploadImageFile(req *model.UploadImageRequest) (*model.Uploa
 		return nil, errors.New("error uploading image: Invalid file type. Only JPEG, PNG, and GIF are allowed")
 	}
 
-	imageFolder := utils.ToSnakeCase(req.Title)
-
-	// Upload the image to Supabase
-	fileName, err := uploadFile(req.Image, "blog-body-photos", imageFolder)
+	// Upload the image to Supabase, let the post ID be the folder name
+	fileName, err := uploadFile(req.Image, "blog-body-photos", req.PostID)
 	if err != nil {
 		log.Error("error uploading image: %v", err)
 		return nil, fmt.Errorf("error uploading image: %w", err)
