@@ -72,34 +72,34 @@ func uploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...str
 	return result.Key, nil
 }
 
-func removeFile(file string) error {
-	storageClient := config.CreateStorageClient()
+// func removeFile(file string) error {
+// 	storageClient := config.CreateStorageClient()
 
-	var bucketName, fileName string
+// 	var bucketName, fileName string
 
-	const zero, one, two = 0, 1, 2
+// 	const zero, one, two = 0, 1, 2
 
-	filePath := strings.Split(file, "/")
-	switch len(filePath) {
-	case two:
-		bucketName = filePath[0]
-		fileName = filePath[1]
-	case zero, one:
-		return errors.New("invalid file path")
-	default:
-		bucketName = filePath[0]
-		fileName = strings.Join(filePath[1:], "/")
-	}
+// 	filePath := strings.Split(file, "/")
+// 	switch len(filePath) {
+// 	case two:
+// 		bucketName = filePath[0]
+// 		fileName = filePath[1]
+// 	case zero, one:
+// 		return errors.New("invalid file path")
+// 	default:
+// 		bucketName = filePath[0]
+// 		fileName = strings.Join(filePath[1:], "/")
+// 	}
 
-	_, err := storageClient.RemoveFile(bucketName, []string{fileName})
+// 	_, err := storageClient.RemoveFile(bucketName, []string{fileName})
 
-	if err != nil {
-		log.Error("Error deleting image:", err)
-		return errors.New("error deleting image")
-	}
+// 	if err != nil {
+// 		log.Error("Error deleting image:", err)
+// 		return errors.New("error deleting image")
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
 // Constructs and returns the public URL of a image
 func publicImageURL(imageName string) string {

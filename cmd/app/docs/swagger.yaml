@@ -678,6 +678,8 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
       summary: Get all draft posts (strictly for admin)
       tags:
       - posts
@@ -874,6 +876,41 @@ paths:
       summary: Get user by Email
       tags:
       - users
+  /posts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a post by ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Delete a post
+      tags:
+      - posts
 securityDefinitions:
   BearerAuth:
     in: header

@@ -8,6 +8,7 @@ import (
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"github.com/gofiber/fiber/v2/log"
+	"github.com/google/uuid"
 )
 
 type PostService interface {
@@ -16,6 +17,7 @@ type PostService interface {
 	GetAllDrafts(pageStr, limitStr string) ([]*model.PostResponse, error)
 	GetAllPosts(page, limit string) ([]*model.PostResponse, error)
 	UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error)
+	DeletePost(id string) error
 }
 
 type postService struct {
@@ -30,14 +32,16 @@ func NewPostService(postRepo repository.PostRepository) PostService {
 
 // CreatePost creates a new post
 func (s *postService) CreatePost(req *model.PostRequest) (*model.PostResponse, error) {
-	imageFolder := utils.ToSnakeCase(req.Title)
-	coverImageURL, err := uploadFile(req.CoverImage, "blog-cover-photos", imageFolder)
+	postID := uuid.New()
+
+	coverImageURL, err := uploadFile(req.CoverImage, "blog-cover-photos", postID.String())
 
 	if err != nil {
 		return nil, fmt.Errorf("error uploading image: %w", err)
 	}
 
 	post := &model.Post{
+		ID:         postID.String(),
 		Title:      req.Title,
 		CoverImage: coverImageURL,
 		Slug:       req.Slug,
@@ -152,11 +156,22 @@ func (*postService) UploadImageFile(req *model.UploadImageRequest) (*model.Uploa
 	}, nil
 }
 
-func (*postService) DeleteImageFile(req *model.DeleteImageRequest) error {
-	// Delete the image to Supabase
-	if err := removeFile(req.FileName); err != nil {
-		log.Error("error deleting image: %v", err)
-		return errors.New("error deleting image")
+// func (*postService) DeleteImageFile(req *model.DeleteImageRequest) error {
+// 	// Delete the image to Supabase
+// 	if err := removeFile(req.FileName); err != nil {
+// 		log.Error("error deleting image: %v", err)
+// 		return errors.New("error deleting image")
+// 	}
+
+// 	return nil
+// }
+
+// DeletePost deletes a post
+func (s *postService) DeletePost(id string) error {
+	err := s.postRepo.Delete(id)
+	if err != nil {
+		log.Errorf("Failed to delete post %s: %v", id, err)
+		return err
 	}
 
 	return nil

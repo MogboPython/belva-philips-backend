@@ -10,9 +10,11 @@ import (
 
 // Config func to get env value
 func Config(key string) string {
-	err := godotenv.Load()
-	if err != nil {
-		log.Errorf("Error loading .env file: ", err)
+	if os.Getenv("FLY_APP_NAME") == "" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Errorf("Error loading .env file: %v", err)
+		}
 	}
 
 	return os.Getenv(key)

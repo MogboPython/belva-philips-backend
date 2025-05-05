@@ -58,6 +58,7 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 
 		post.Get("/", postHandler.GetAllPosts)
 		post.Get("/:id", postHandler.GetPostByID)
+		post.Delete("/:id", middleware.Protected(), middleware.AdminRole(), postHandler.DeletePost)
 	}
 
 	// handle unavailable route

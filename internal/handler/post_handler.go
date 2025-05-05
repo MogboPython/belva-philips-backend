@@ -137,6 +137,9 @@ func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 //	@Summary		Get all draft posts (strictly for admin)
 //	@Description	Fetch a paginated list of posts from the database
 //	@Tags			posts
+//
+//	@Security		BearerAuth
+//
 //	@Accept			json
 //	@Produce		json
 //	@Param			page	query		int	false	"Page number (default is 1)"
@@ -271,5 +274,53 @@ func (h *PostHandler) UploadImage(c *fiber.Ctx) error {
 		Success: true,
 		Message: "Successfully uploaded image",
 		Data:    *image,
+	})
+}
+
+// DeletePost deletes a post by ID
+//
+// @Summary Delete a post
+// @Description Delete a post by ID
+// @Tags posts
+//
+//	@Security		BearerAuth
+//
+// @Accept json
+// @Produce json
+// @Param		id		path	string	true	"Post ID"
+// @Success 	204 	{object} model.ResponseHTTP{}
+// @Failure 	400 	{object} model.ResponseHTTP{}
+// @Failure 	404 	{object} model.ResponseHTTP{}
+// @Failure 	500 	{object} model.ResponseHTTP{}
+// @Router /posts/{id} [delete]
+func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
+	postID := c.Params("id")
+	if postID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Post ID is required",
+		})
+	}
+
+	err := h.postService.DeletePost(postID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Post not found",
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusNoContent).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully deleted post",
+		Data:    nil,
 	})
 }
