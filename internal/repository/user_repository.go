@@ -11,32 +11,27 @@ import (
 type UserRepository interface {
 	Create(user *model.User) error
 	GetByID(id string) (*model.User, error)
-	GetByEmail(email string) (*model.User, error)
 	GetAll(offset, limit int) ([]*model.User, error)
 	UpdateMembership(userID, status string) (*model.User, error)
 	// Update(id int64, user *model.User) error
 	// Delete(id int64) error
 }
 
-// userRepository implements UserRepository interface
 type userRepository struct {
 	db *gorm.DB
 }
 
-// NewUserRepository creates a new user repository
 func NewUserRepository(db *gorm.DB) UserRepository {
 	return &userRepository{
 		db: db,
 	}
 }
 
-// Create inserts a new user into the database
 func (r *userRepository) Create(user *model.User) error {
 	err := r.db.Create(&user).Error
 	return err
 }
 
-// GetByID retrieves a user by ID
 func (r *userRepository) GetByID(id string) (*model.User, error) {
 	var user model.User
 
@@ -47,17 +42,6 @@ func (r *userRepository) GetByID(id string) (*model.User, error) {
 	return &user, nil
 }
 
-func (r *userRepository) GetByEmail(email string) (*model.User, error) {
-	var user model.User
-
-	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
-		return nil, err
-	}
-
-	return &user, nil
-}
-
-// GetAll retrieves all users
 func (r *userRepository) GetAll(offset, limit int) ([]*model.User, error) {
 	var users []*model.User
 

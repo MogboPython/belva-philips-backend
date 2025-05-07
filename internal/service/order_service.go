@@ -31,7 +31,6 @@ func NewOrderService(orderRepo repository.OrderRepository) OrderService {
 	}
 }
 
-// CreateOrder creates a new order
 func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderResponse, error) {
 	detailsBytes, err := json.Marshal(request.Details)
 	if err != nil {
@@ -42,7 +41,6 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 
 	shotsArray := pq.StringArray(request.Shots)
 
-	// Create a new order
 	order := &model.Order{
 		UserID:             request.UserID,
 		ProductName:        request.ProductName,
@@ -56,7 +54,6 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 		DeliverySpeed:      request.DeliverySpeed,
 	}
 
-	// Save to database
 	if err := s.orderRepo.Create(order); err != nil {
 		log.Error("error saving order:", err)
 		return nil, err
@@ -65,11 +62,9 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 	return mapOrderToResponse(order), nil
 }
 
-// GetAllUsers retrieves all orders
 func (s *orderService) GetAllOrders(pageStr, limitStr, status string) (model.TotalOrderResponse, error) {
 	var totalOrderResponse model.TotalOrderResponse
 
-	// Convert to integers
 	offset, limit := utils.GetPageAndLimitInt(pageStr, limitStr)
 
 	orders, ordersCount, err := s.orderRepo.GetAll(offset, limit, status)
@@ -88,7 +83,6 @@ func (s *orderService) GetAllOrders(pageStr, limitStr, status string) (model.Tot
 	return totalOrderResponse, nil
 }
 
-// GetOrderByID retrieves an order by ID
 func (s *orderService) GetOrderByID(id string) (*model.OrderResponse, error) {
 	order, err := s.orderRepo.GetByOrderID(id)
 	if err != nil {
@@ -123,7 +117,6 @@ func (s *orderService) UpdateOrderStatus(orderID string, request *model.OrderSta
 	return mapOrderToResponse(order), nil
 }
 
-// mapOrderToResponse maps a order model to a order response
 func mapOrderToResponse(order *model.Order) *model.OrderResponse {
 	var detailsMap map[string]any
 

@@ -8,6 +8,7 @@ import (
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/internal/router"
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
+	"github.com/MogboPython/belvaphilips_backend/internal/storage"
 	_ "github.com/lib/pq"
 
 	"github.com/gofiber/fiber/v2"
@@ -43,10 +44,13 @@ func main() {
 	}
 
 	db := database.DB
-	// Initialize repository, service, and handler
+	storageClient := config.CreateStorageClient()
+
+	storageService := storage.NewStorageService(storageClient)
+
 	userRepo := repository.NewUserRepository(db)
 	orderRepo := repository.NewOrderRepository(db)
-	postRepo := repository.NewPostRepository(db)
+	postRepo := repository.NewPostRepository(db, storageService)
 
 	userService := service.NewUserService(userRepo)
 	userHandler := handler.NewUserHandler(userService)
@@ -57,7 +61,7 @@ func main() {
 	orderService := service.NewOrderService(orderRepo)
 	orderHandler := handler.NewOrderHandler(orderService)
 
-	postService := service.NewPostService(postRepo)
+	postService := service.NewPostService(postRepo, storageService)
 	postHandler := handler.NewPostHandler(postService)
 
 	app.Get("/swagger/*", swagger.HandlerDefault)

@@ -65,13 +65,13 @@ func TestUploadAndRemoveImage(t *testing.T) {
 		assert.True(t, strings.Contains(publicURL, "blog-cover-photos"))
 	})
 
-	// t.Run("Should remove image from supabase bucket", func(t *testing.T) {
-	// 	if publicURL == "" {
-	// 		t.Fatal("publicURL is empty - upload test probably failed")
-	// 	}
+	t.Run("Should remove image from supabase bucket", func(t *testing.T) {
+		if publicURL == "" {
+			t.Fatal("publicURL is empty - upload test probably failed")
+		}
 
-	// 	err := removeFile(publicURL)
+		err := removeFile(publicURL)
 
-	// 	assert.NoError(t, err)
-	// })
+		assert.NoError(t, err)
+	})
 }

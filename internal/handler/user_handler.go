@@ -24,7 +24,6 @@ func NewUserHandler(userService service.UserService) *UserHandler {
 	}
 }
 
-// TODO: remove
 func (h *UserHandler) CreateUserAccessToken(c *fiber.Ctx) error {
 	var payload model.TokenRequestPayload
 
@@ -139,66 +138,6 @@ func (h *UserHandler) GetUserByID(c *fiber.Ctx) error {
 	id := c.Params("id")
 
 	user, err := h.userService.GetUserByID(id)
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
-				Success: false,
-				Message: "User not found",
-				Data:    nil,
-			})
-		}
-
-		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
-			Success: false,
-			Message: "Internal server error",
-			Data:    nil,
-		})
-	}
-
-	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
-		Success: true,
-		Message: "Successfully found user.",
-		Data:    *user,
-	})
-}
-
-// GetUserByEmail is a function to get a user by Email
-//
-//	@Summary		Get user by Email
-//	@Description	Get user by Email
-//	@Tags			users
-//
-//	@Security		BearerAuth
-//
-//	@Accept			json
-//	@Produce		json
-//	@Param			request	body		model.GetUserByEmailRequest	true	"User Email"
-//	@Success		200		{object}	model.ResponseHTTP{data=model.UserResponse}
-//	@Failure		404		{object}	model.ResponseHTTP{}
-//	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/users/get_user [get]
-//
-// TODO: remove
-func (h *UserHandler) GetUserByEmail(c *fiber.Ctx) error {
-	var payload model.GetUserByEmailRequest
-
-	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
-			Success: false,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	if err := h.validator.Validate(payload); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
-			Success: false,
-			Message: err.Error(),
-			Data:    nil,
-		})
-	}
-
-	user, err := h.userService.GetUserByEmail(&payload)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{

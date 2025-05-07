@@ -13,7 +13,6 @@ import (
 type UserService interface {
 	CreateUser(req *model.CreateUserRequest) (*model.UserResponse, error)
 	GetUserByID(id string) (*model.UserResponse, error)
-	GetUserByEmail(req *model.GetUserByEmailRequest) (*model.UserResponse, error)
 	UpdateUserMembershipStatusChange(userID string, request *model.MembershipStatusChangeRequest) (*model.UserResponse, error)
 	// UpdateUser(id int64, req *model.UpdateUserRequest) (*model.UserResponse, error)
 	// DeleteUser(id int64) error
@@ -59,15 +58,6 @@ func (s *userService) GetUserByID(id string) (*model.UserResponse, error) {
 	return mapUserToResponse(user), nil
 }
 
-func (s *userService) GetUserByEmail(req *model.GetUserByEmailRequest) (*model.UserResponse, error) {
-	user, err := s.userRepo.GetByEmail(req.Email)
-	if err != nil {
-		return nil, fmt.Errorf("failed to find user: %w", err)
-	}
-
-	return mapUserToResponse(user), nil
-}
-
 func (s *userService) UpdateUserMembershipStatusChange(userID string, request *model.MembershipStatusChangeRequest) (*model.UserResponse, error) {
 	user, err := s.userRepo.UpdateMembership(userID, request.Status)
 	if err != nil {
@@ -88,7 +78,6 @@ func (s *userService) UpdateUserMembershipStatusChange(userID string, request *m
 // 		return nil, err
 // 	}
 
-// 	// Update fields if provided
 // 	if req.Username != "" {
 // 		existingUser.Username = req.Username
 // 	}
@@ -111,7 +100,6 @@ func (s *userService) UpdateUserMembershipStatusChange(userID string, request *m
 // 	return s.userRepo.Delete(id)
 // }
 
-// mapUserToResponse maps a user model to a user response
 func mapUserToResponse(user *model.User) *model.UserResponse {
 	return &model.UserResponse{
 		ID:          user.ID,

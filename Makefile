@@ -1,31 +1,27 @@
 include .env.development
 
-.PHONY: build run dev test swagger lint migrate-status migrate-create migrate-create-sql migrate-up migrate-down help
-# build run dev test clean swagger lint
+.PHONY: build run dev test swagger lint migrate-status migrate-create migrate-create-sql migrate-up migrate-down help deploy
+
 BINARY_NAME=belvaphilips_backend
 MIGRATIONS_DIR=./internal/database/migrations
 DB_DRIVER=postgres
 
-# Default target
+
 all: swagger build
 
-# Build the application
 build:
 	@echo "Building application..."
 	go build -o bin/app cmd/app/main.go
 
-# Run the application
 run: build
 	@echo "Running application..."
 	./bin/app
 
-# Run the application in development mode with hot reload
 dev:
 	@echo "Running in development mode..."
 	go install github.com/air-verse/air@latest
 	~/go/bin/air -c .air.toml
 
-# Run tests
 test:
 	@echo "Running tests..."
 	go test -v ./...
@@ -36,7 +32,6 @@ test:
 # 	go test -v -coverprofile=coverage.out ./...
 # 	go tool cover -html=coverage.out
 
-# Generate swagger documentation
 swagger:
 	@echo "Generating Swagger documentation..."
 	go install github.com/swaggo/swag/cmd/swag@latest
@@ -49,7 +44,6 @@ git:
 	
 # swag init -g cmd/api/main.go -o ./docs
 
-# Create database migrations
 check-migration-name:
 ifndef name
 	$(error name is required)
@@ -60,28 +54,18 @@ migrate-status:
 	@echo "Checking migration status..."
 	goose -dir ${MIGRATIONS_DIR} postgres "$(DIRECT_URL)" status
 
-
-# Create a new Go migration
 migrate-create: check-migration-name
 	@echo "Creating new Go migration '$(name)'..."
 	goose -dir ${MIGRATIONS_DIR} create $(name) go
 
-# Create a new SQL migration
 migrate-create-sql: check-migration-name
 	@echo "Creating new SQL migration '$(name)'..."
 	goose -dir ${MIGRATIONS_DIR} create $(name) sql
 
-# migrate-create:
-# 	@echo "Creating migration..."
-# 	@read -p "Enter migration name: " name; \
-# 	migrate create -ext sql -dir migrations -seq $${name}
-
-# Run database migrations up
 migrate-up:
 	@echo "Running migrations up..."
 	goose -dir ${MIGRATIONS_DIR} ${DB_DRIVER} "$(DIRECT_URL)" up
 
-# Run database migrations down
 migrate-down:
 	@echo "Running migrations down..."
 	goose -dir ${MIGRATIONS_DIR} ${DB_DRIVER} "$(DIRECT_URL)" down
@@ -98,10 +82,9 @@ lint:
 # 	rm -rf bin/
 # 	rm -rf docs/
 
-# Run the application with Docker
-# docker-run:
-# 	@echo "Building and running with Docker..."
-# 	docker-compose up --build
+deploy:
+	@echo "Deploying application..."
+	fly deploy --local-only
 
 # Print help information
 help:
@@ -112,11 +95,4 @@ help:
 	@echo "  swagger        - Generate Swagger documentation"
 	@echo "  lint           - Run linter"
 	@echo "  help           - Print this help information"
-
-# @echo "  test           - Run tests"
-# @echo "  test-coverage  - Run tests with coverage report"
-# @echo "  migrate-create - Create a new migration file"
-# @echo "  migrate-up     - Run migrations up"
-# @echo "  migrate-down   - Run migrations down"
-# @echo "  clean          - Clean build artifacts"
-# @echo "  docker-run     - Run with Docker"
+	@echo "  deploy     	- Deploy the application to Fly.io"

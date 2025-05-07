@@ -2,10 +2,9 @@ package utils
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
-
-	"log"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"gorm.io/gorm"
@@ -27,7 +26,6 @@ func GetPageAndLimitInt(pageStr, limitStr string) (offset, limit int) {
 		limit = LIMIT
 	}
 
-	// Calculate offset
 	offset = (page - 1) * limit
 
 	return offset, limit
@@ -54,31 +52,13 @@ func ExistsByID(db *gorm.DB, model any, id string) (bool, error) {
 	return true, nil
 }
 
-func RemoveFile(file string) error {
-	storageClient := config.CreateStorageClient()
-
-	var bucketName, fileName string
-
-	const zero, one, two = 0, 1, 2
-
-	filePath := strings.Split(file, "/")
-	switch len(filePath) {
-	case two:
-		bucketName = filePath[0]
-		fileName = filePath[1]
-	case zero, one:
-		return errors.New("invalid file path")
-	default:
-		bucketName = filePath[0]
-		fileName = strings.Join(filePath[1:], "/")
+func PublicImageURL(imageName string) string {
+	if imageName == "" {
+		return ""
 	}
 
-	_, err := storageClient.RemoveFile(bucketName, []string{fileName})
-
-	if err != nil {
-		log.Println("Error deleting image:", err)
-		return errors.New("error deleting image")
-	}
-
-	return nil
+	return fmt.Sprintf("%s/object/public/%s",
+		config.Config("SUPABASE_URL"),
+		imageName,
+	)
 }

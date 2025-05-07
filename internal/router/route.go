@@ -28,7 +28,6 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 	api.Post("/token", userHandler.CreateUserAccessToken)
 	{
 		user := api.Group("/users", middleware.Protected())
-		user.Get("/get_user", userHandler.GetUserByEmail)
 		user.Get("/:id", userHandler.GetUserByID)
 		user.Post("/", userHandler.CreateUser)
 		user.Put("/:id/membership", userHandler.UpdateMembershipStatus)

@@ -1,4 +1,4 @@
-package service
+package storage
 
 import (
 	"errors"
@@ -7,22 +7,32 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
-
 	storage "github.com/supabase-community/storage-go"
 )
 
-// TODO: remove this function and use the one in internal/storage
-func uploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...string) (string, error) {
+type StorageService interface {
+	UploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...string) (string, error)
+	RemoveFile(file string) error
+	RemoveFolder(folderPath string) error
+}
+
+type storageService struct {
+	client *storage.Client
+}
+
+func NewStorageService(client *storage.Client) StorageService {
+	return &storageService{
+		client: client,
+	}
+}
+
+func (s *storageService) UploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...string) (string, error) {
 	if imageFile == nil {
 		return "", nil
 	}
 
-	storageClient := config.CreateStorageClient()
-
-	// Extract file extension
 	fileExt := filepath.Ext(imageFile.Filename)
 	if fileExt == "" {
 		return "", errors.New("invalid file extension")
@@ -30,11 +40,9 @@ func uploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...str
 
 	fileExt = strings.TrimPrefix(fileExt, ".")
 
-	// Generate unique filename
 	uniqueID := uuid.New()
 	filename := strings.ReplaceAll(uniqueID.String(), "-", "")
 
-	// Determine path based on optional subPath parameter
 	var imagePath string
 	if len(subPath) > 0 && subPath[0] != "" {
 		imagePath = fmt.Sprintf("%s/%s.%s", subPath[0], filename, fileExt)
@@ -42,19 +50,16 @@ func uploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...str
 		imagePath = fmt.Sprintf("%s.%s", filename, fileExt)
 	}
 
-	// Check file size (e.g., 5MB limit)
-	const maxFileSize = 5 * 1024 * 1024 // 5MB
+	const maxFileSize = 5 * 1024 * 1024
 	if imageFile.Size > maxFileSize {
 		return "", errors.New("file size exceeds 5MB limit")
 	}
 
-	// Check content type
 	contentType := imageFile.Header.Get("Content-Type")
 	if !strings.HasPrefix(contentType, "image/") && contentType != "application/pdf" {
 		return "", errors.New("file is neither an image nor a PDF")
 	}
 
-	// Open the file
 	file, err := imageFile.Open()
 	if err != nil {
 		log.Error("Error opening file:", err)
@@ -62,7 +67,7 @@ func uploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...str
 	}
 	defer file.Close()
 
-	result, err := storageClient.UploadFile(bucketID, imagePath, file, storage.FileOptions{
+	result, err := s.client.UploadFile(bucketID, imagePath, file, storage.FileOptions{
 		ContentType: &contentType,
 	})
 	if err != nil {
@@ -73,9 +78,7 @@ func uploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...str
 	return result.Key, nil
 }
 
-func removeFile(file string) error {
-	storageClient := config.CreateStorageClient()
-
+func (s *storageService) RemoveFile(file string) error {
 	var bucketName, fileName string
 
 	const zero, one, two = 0, 1, 2
@@ -92,11 +95,28 @@ func removeFile(file string) error {
 		fileName = strings.Join(filePath[1:], "/")
 	}
 
-	_, err := storageClient.RemoveFile(bucketName, []string{fileName})
+	_, err := s.client.RemoveFile(bucketName, []string{fileName})
 
 	if err != nil {
-		log.Error("Error deleting image:", err)
+		log.Error("Error deleting image: ", err)
 		return errors.New("error deleting image")
+	}
+
+	return nil
+}
+
+func (s *storageService) RemoveFolder(folderPath string) error {
+	_, err := s.client.EmptyBucket(folderPath)
+
+	if err != nil {
+		log.Error("Error emptying bucket:", err)
+		return errors.New("error emptying bucket")
+	}
+
+	_, err = s.client.DeleteBucket(folderPath)
+	if err != nil {
+		log.Error("Error deleting bucket:", err)
+		return errors.New("error deleting bucket")
 	}
 
 	return nil

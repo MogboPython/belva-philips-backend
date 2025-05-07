@@ -1,8 +1,9 @@
 package repository
 
 import (
+	"github.com/MogboPython/belvaphilips_backend/internal/storage"
+
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
-	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
 )
@@ -10,19 +11,21 @@ import (
 type PostRepository interface {
 	Create(post *model.Post) error
 	GetByID(postID string) (*model.Post, error)
-	GetAllDrafts(offset, limit int) ([]*model.Post, error)
+	GetAllDrafts(offset, limit int) ([]*model.Post, int64, error)
 	UpdatePost(post *model.Post) error
-	GetAll(offset, limit int) ([]*model.Post, error)
+	GetAll(offset, limit int) ([]*model.Post, int64, error)
 	Delete(postID string) error
 }
 
 type postRepository struct {
-	db *gorm.DB
+	db             *gorm.DB
+	storageService storage.StorageService
 }
 
-func NewPostRepository(db *gorm.DB) PostRepository {
+func NewPostRepository(db *gorm.DB, storageService storage.StorageService) PostRepository {
 	return &postRepository{
-		db: db,
+		db:             db,
+		storageService: storageService,
 	}
 }
 
@@ -44,33 +47,39 @@ func (r *postRepository) GetByID(id string) (*model.Post, error) {
 }
 
 // GetAll retrieves all published posts
-func (r *postRepository) GetAll(offset, limit int) ([]*model.Post, error) {
+func (r *postRepository) GetAll(offset, limit int) ([]*model.Post, int64, error) {
 	var posts []*model.Post
+
+	var count int64
 
 	if err := r.db.Where("status = ?", "published").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
-		Find(&posts).Error; err != nil {
-		return nil, err
+		Find(&posts).
+		Count(&count).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return posts, nil
+	return posts, count, nil
 }
 
 // GetAllDrafts retrieves all drafts
-func (r *postRepository) GetAllDrafts(offset, limit int) ([]*model.Post, error) {
+func (r *postRepository) GetAllDrafts(offset, limit int) ([]*model.Post, int64, error) {
 	var posts []*model.Post
+
+	var count int64
 
 	if err := r.db.Where("status = ?", "draft").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(limit).
-		Find(&posts).Error; err != nil {
-		return nil, err
+		Find(&posts).
+		Count(&count).Error; err != nil {
+		return nil, 0, err
 	}
 
-	return posts, nil
+	return posts, count, nil
 }
 
 func (r *postRepository) UpdatePost(post *model.Post) error {
@@ -80,9 +89,8 @@ func (r *postRepository) UpdatePost(post *model.Post) error {
 func (r *postRepository) Delete(postID string) error {
 	// Use a transaction to ensure both the database record and file operations are atomic
 	return r.db.Transaction(func(tx *gorm.DB) error {
-		// First, get the post to check if it has a cover image
 		var post model.Post
-		if err := tx.First(&post, postID).Error; err != nil {
+		if err := tx.Where("id = ?", postID).First(&post).Error; err != nil {
 			return err
 		}
 
@@ -94,7 +102,7 @@ func (r *postRepository) Delete(postID string) error {
 
 		// If post has a cover image, remove the file
 		if post.CoverImage != "" {
-			if err := utils.RemoveFile(post.CoverImage); err != nil {
+			if err := r.storageService.RemoveFile(post.CoverImage); err != nil {
 				log.Warnf("Failed to delete cover image %s for post %s: %v",
 					post.CoverImage, postID, err)
 			}

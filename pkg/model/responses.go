@@ -42,8 +42,8 @@ type OrderResponse struct {
 }
 
 type TotalOrderResponse struct {
-	Orders       []*OrderResponse `json:"orders"`
 	OrderNumbers OrdersCount      `json:"orders_count"`
+	Orders       []*OrderResponse `json:"orders"`
 }
 
 type PostResponse struct {
@@ -55,6 +55,11 @@ type PostResponse struct {
 	CoverImage string    `json:"cover_image"`
 	Status     string    `json:"status"`
 	ID         string    `json:"id"`
+}
+
+type TotalPostResponse struct {
+	Total int64           `json:"total"`
+	Posts []*PostResponse `json:"posts"`
 }
 
 type UploadImageResponse struct {

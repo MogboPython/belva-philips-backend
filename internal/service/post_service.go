@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
+	"github.com/MogboPython/belvaphilips_backend/internal/storage"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"github.com/gofiber/fiber/v2/log"
@@ -14,27 +15,28 @@ import (
 type PostService interface {
 	CreatePost(req *model.PostRequest) (*model.PostResponse, error)
 	GetPostByID(id string) (*model.PostResponse, error)
-	GetAllDrafts(pageStr, limitStr string) ([]*model.PostResponse, error)
-	GetAllPosts(page, limit string) ([]*model.PostResponse, error)
+	GetAllDrafts(pageStr, limitStr string) (model.TotalPostResponse, error)
+	GetAllPosts(page, limit string) (model.TotalPostResponse, error)
 	UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error)
 	DeletePost(id string) error
 }
 
 type postService struct {
-	postRepo repository.PostRepository
+	postRepo       repository.PostRepository
+	storageService storage.StorageService
 }
 
-func NewPostService(postRepo repository.PostRepository) PostService {
+func NewPostService(postRepo repository.PostRepository, storageService storage.StorageService) PostService {
 	return &postService{
-		postRepo: postRepo,
+		postRepo:       postRepo,
+		storageService: storageService,
 	}
 }
 
-// CreatePost creates a new post
 func (s *postService) CreatePost(req *model.PostRequest) (*model.PostResponse, error) {
 	postID := uuid.New()
 
-	coverImageURL, err := uploadFile(req.CoverImage, "blog-cover-photos", postID.String())
+	coverImageURL, err := s.storageService.UploadFile(req.CoverImage, "blog-cover-photos", postID.String())
 
 	if err != nil {
 		return nil, fmt.Errorf("error uploading image: %w", err)
@@ -57,13 +59,14 @@ func (s *postService) CreatePost(req *model.PostRequest) (*model.PostResponse, e
 	return mapPostToResponse(post), nil
 }
 
-// GetAllPosts retrieves all published posts
-func (s *postService) GetAllPosts(pageStr, limitStr string) ([]*model.PostResponse, error) {
+func (s *postService) GetAllPosts(pageStr, limitStr string) (model.TotalPostResponse, error) {
+	var totalPostResponse model.TotalPostResponse
+
 	offset, limit := utils.GetPageAndLimitInt(pageStr, limitStr)
 
-	posts, err := s.postRepo.GetAll(offset, limit)
+	posts, count, err := s.postRepo.GetAll(offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get posts: %w", err)
+		return totalPostResponse, fmt.Errorf("failed to get posts: %w", err)
 	}
 
 	postResponses := make([]*model.PostResponse, len(posts))
@@ -71,16 +74,20 @@ func (s *postService) GetAllPosts(pageStr, limitStr string) ([]*model.PostRespon
 		postResponses[i] = mapPostToResponse(post)
 	}
 
-	return postResponses, nil
+	totalPostResponse.Posts = postResponses
+	totalPostResponse.Total = count
+
+	return totalPostResponse, nil
 }
 
-// GetAllDrafts retrieves draft posts
-func (s *postService) GetAllDrafts(pageStr, limitStr string) ([]*model.PostResponse, error) {
+func (s *postService) GetAllDrafts(pageStr, limitStr string) (model.TotalPostResponse, error) {
+	var totalPostResponse model.TotalPostResponse
+
 	offset, limit := utils.GetPageAndLimitInt(pageStr, limitStr)
 
-	posts, err := s.postRepo.GetAllDrafts(offset, limit)
+	posts, count, err := s.postRepo.GetAllDrafts(offset, limit)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get posts: %w", err)
+		return totalPostResponse, fmt.Errorf("failed to get posts: %w", err)
 	}
 
 	postResponses := make([]*model.PostResponse, len(posts))
@@ -88,10 +95,12 @@ func (s *postService) GetAllDrafts(pageStr, limitStr string) ([]*model.PostRespo
 		postResponses[i] = mapPostToResponse(post)
 	}
 
-	return postResponses, nil
+	totalPostResponse.Posts = postResponses
+	totalPostResponse.Total = count
+
+	return totalPostResponse, nil
 }
 
-// GetPostByID retrieves an post by ID
 func (s *postService) GetPostByID(id string) (*model.PostResponse, error) {
 	post, err := s.postRepo.GetByID(id)
 	if err != nil {
@@ -103,7 +112,6 @@ func (s *postService) GetPostByID(id string) (*model.PostResponse, error) {
 }
 
 // TODO: a lot to work on here
-// UpdatePost updates an existing post
 func (s *postService) UpdatePost(id string, req *model.PostRequest) (*model.PostResponse, error) {
 	post, err := s.postRepo.GetByID(id)
 	if err != nil {
@@ -112,14 +120,13 @@ func (s *postService) UpdatePost(id string, req *model.PostRequest) (*model.Post
 
 	// TODO: Check if there was a cover image before then delete now
 
-	coverImageURL, err := uploadFile(req.CoverImage, "blog-cover-photos")
+	coverImageURL, err := s.storageService.UploadFile(req.CoverImage, "blog-cover-photos")
 
 	if err != nil {
 		log.Error("error uploading image: %v", err)
 		return nil, err
 	}
 
-	// Update post fields
 	post.Title = req.Title
 	post.Slug = req.Slug
 	post.Content = req.Content
@@ -129,8 +136,7 @@ func (s *postService) UpdatePost(id string, req *model.PostRequest) (*model.Post
 	return mapPostToResponse(post), nil
 }
 
-func (*postService) UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error) {
-	// Validate file type
+func (s *postService) UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error) {
 	allowedTypes := map[string]bool{
 		"image/jpeg": true,
 		"image/png":  true,
@@ -140,15 +146,13 @@ func (*postService) UploadImageFile(req *model.UploadImageRequest) (*model.Uploa
 		return nil, errors.New("error uploading image: Invalid file type. Only JPEG, PNG, and GIF are allowed")
 	}
 
-	// Upload the image to Supabase, let the post ID be the folder name
-	fileName, err := uploadFile(req.Image, "blog-body-photos", req.PostID)
+	fileName, err := s.storageService.UploadFile(req.Image, "blog-body-photos", req.PostID)
 	if err != nil {
 		log.Error("error uploading image: %v", err)
 		return nil, fmt.Errorf("error uploading image: %w", err)
 	}
 
-	// Get the public URL of the uploaded image
-	publicURL := publicImageURL(fileName)
+	publicURL := utils.PublicImageURL(fileName)
 
 	return &model.UploadImageResponse{
 		ImageURL: publicURL,
@@ -157,7 +161,6 @@ func (*postService) UploadImageFile(req *model.UploadImageRequest) (*model.Uploa
 }
 
 // func (*postService) DeleteImageFile(req *model.DeleteImageRequest) error {
-// 	// Delete the image to Supabase
 // 	if err := removeFile(req.FileName); err != nil {
 // 		log.Error("error deleting image: %v", err)
 // 		return errors.New("error deleting image")
@@ -177,14 +180,13 @@ func (s *postService) DeletePost(id string) error {
 	return nil
 }
 
-// mapUserToResponse maps a user model to a user response
 func mapPostToResponse(post *model.Post) *model.PostResponse {
 	return &model.PostResponse{
 		ID:         post.ID,
 		Title:      post.Title,
 		Slug:       post.Slug,
 		Content:    post.Content,
-		CoverImage: publicImageURL(post.CoverImage),
+		CoverImage: utils.PublicImageURL(post.CoverImage),
 		Status:     post.Status,
 		CreatedAt:  post.CreatedAt,
 		UpdatedAt:  post.UpdatedAt,

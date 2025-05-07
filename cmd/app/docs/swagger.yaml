@@ -43,13 +43,6 @@ definitions:
     - name
     - phone_number
     type: object
-  model.GetUserByEmailRequest:
-    properties:
-      email:
-        type: string
-    required:
-    - email
-    type: object
   model.MembershipStatusChangeRequest:
     properties:
       membership_status:
@@ -177,6 +170,15 @@ definitions:
         type: array
       orders_count:
         $ref: '#/definitions/model.OrdersCount'
+    type: object
+  model.TotalPostResponse:
+    properties:
+      posts:
+        items:
+          $ref: '#/definitions/model.PostResponse'
+        type: array
+      total:
+        type: integer
     type: object
   model.UploadImageResponse:
     properties:
@@ -543,9 +545,7 @@ paths:
               - $ref: '#/definitions/model.ResponseHTTP'
               - properties:
                   data:
-                    items:
-                      $ref: '#/definitions/model.PostResponse'
-                    type: array
+                    $ref: '#/definitions/model.TotalPostResponse'
                 type: object
             type: array
         "500":
@@ -611,6 +611,40 @@ paths:
       tags:
       - posts
   /api/v1/posts/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a post by ID
+      parameters:
+      - description: Post ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Delete a post
+      tags:
+      - posts
     get:
       consumes:
       - application/json
@@ -669,9 +703,7 @@ paths:
               - $ref: '#/definitions/model.ResponseHTTP'
               - properties:
                   data:
-                    items:
-                      $ref: '#/definitions/model.PostResponse'
-                    type: array
+                    $ref: '#/definitions/model.TotalPostResponse'
                 type: object
             type: array
         "500":
@@ -839,78 +871,6 @@ paths:
       summary: Update the membership status of a user
       tags:
       - users
-  /api/v1/users/get_user:
-    get:
-      consumes:
-      - application/json
-      description: Get user by Email
-      parameters:
-      - description: User Email
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/model.GetUserByEmailRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            allOf:
-            - $ref: '#/definitions/model.ResponseHTTP'
-            - properties:
-                data:
-                  $ref: '#/definitions/model.UserResponse'
-              type: object
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-      security:
-      - BearerAuth: []
-      summary: Get user by Email
-      tags:
-      - users
-  /posts/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Delete a post by ID
-      parameters:
-      - description: Post ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/model.ResponseHTTP'
-      security:
-      - BearerAuth: []
-      summary: Delete a post
-      tags:
-      - posts
 securityDefinitions:
   BearerAuth:
     in: header

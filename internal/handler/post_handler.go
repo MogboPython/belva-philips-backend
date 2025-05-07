@@ -23,25 +23,23 @@ func NewPostHandler(postService service.PostService) *PostHandler {
 	}
 }
 
-// CreatePost creates a new post
+// @Summary		Create a new blog post (strictly for admin)
+// @Description	Create a new blog post with the provided information
+// @Tags			posts
 //
-//	@Summary		Create a new blog post (strictly for admin)
-//	@Description	Create a new blog post with the provided information
-//	@Tags			posts
+// @Security		BearerAuth
 //
-//	@Security		BearerAuth
-//
-//	@Accept			multipart/form-data
-//	@Produce		json
-//	@Param			title		formData	string	true	"Title of the post"
-//	@Param			slug		formData	string	true	"Slug of the post"
-//	@Param			content		formData	string	true	"Content of the post"
-//	@Param			status		formData	string	true	"Status of the post (draft/published)"
-//	@Param			cover_image	formData	file	true	"Cover image for the post"
-//	@Success		201			{object}	model.ResponseHTTP{data=model.PostResponse}
-//	@Failure		400			{object}	model.ResponseHTTP{}
-//	@Failure		500			{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/posts [post]
+// @Accept			multipart/form-data
+// @Produce		json
+// @Param			title		formData	string	true	"Title of the post"
+// @Param			slug		formData	string	true	"Slug of the post"
+// @Param			content		formData	string	true	"Content of the post"
+// @Param			status		formData	string	true	"Status of the post (draft/published)"
+// @Param			cover_image	formData	file	true	"Cover image for the post"
+// @Success		201			{object}	model.ResponseHTTP{data=model.PostResponse}
+// @Failure		400			{object}	model.ResponseHTTP{}
+// @Failure		500			{object}	model.ResponseHTTP{}
+// @Router			/api/v1/posts [post]
 func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	form, err := c.MultipartForm()
 	if err != nil {
@@ -100,18 +98,16 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	})
 }
 
-// GetAllPosts is a function to get all post data from the database
-//
-//	@Summary		Get all published posts
-//	@Description	Fetch a paginated list of posts from the database
-//	@Tags			posts
-//	@Accept			json
-//	@Produce		json
-//	@Param			page	query		int	false	"Page number (default is 1)"
-//	@Param			limit	query		int	false	"Number of posts per page (default is 10)"
-//	@Success		200		{array}		model.ResponseHTTP{data=[]model.PostResponse}
-//	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/posts [get]
+// @Summary		Get all published posts
+// @Description	Fetch a paginated list of posts from the database
+// @Tags			posts
+// @Accept			json
+// @Produce		json
+// @Param			page	query		int	false	"Page number (default is 1)"
+// @Param			limit	query		int	false	"Number of posts per page (default is 10)"
+// @Success		200		{array}		model.ResponseHTTP{data=model.TotalPostResponse}
+// @Failure		500		{object}	model.ResponseHTTP{}
+// @Router			/api/v1/posts [get]
 func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 	pageStr := c.Query("page", "1")
 	limitStr := c.Query("limit", "10")
@@ -132,21 +128,19 @@ func (h *PostHandler) GetAllPosts(c *fiber.Ctx) error {
 	})
 }
 
-// GetAllDraftPosts is a function to get all draft post data from the database
+// @Summary		Get all draft posts (strictly for admin)
+// @Description	Fetch a paginated list of posts from the database
+// @Tags			posts
 //
-//	@Summary		Get all draft posts (strictly for admin)
-//	@Description	Fetch a paginated list of posts from the database
-//	@Tags			posts
+// @Security		BearerAuth
 //
-//	@Security		BearerAuth
-//
-//	@Accept			json
-//	@Produce		json
-//	@Param			page	query		int	false	"Page number (default is 1)"
-//	@Param			limit	query		int	false	"Number of posts per page (default is 10)"
-//	@Success		200		{array}		model.ResponseHTTP{data=[]model.PostResponse}
-//	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/posts/drafts [get]
+// @Accept			json
+// @Produce		json
+// @Param			page	query		int	false	"Page number (default is 1)"
+// @Param			limit	query		int	false	"Number of posts per page (default is 10)"
+// @Success		200		{array}		model.ResponseHTTP{data=model.TotalPostResponse}
+// @Failure		500		{object}	model.ResponseHTTP{}
+// @Router			/api/v1/posts/drafts [get]
 func (h *PostHandler) GetAllDraftPosts(c *fiber.Ctx) error {
 	pageStr := c.Query("page", "1")
 	limitStr := c.Query("limit", "10")
@@ -292,7 +286,7 @@ func (h *PostHandler) UploadImage(c *fiber.Ctx) error {
 // @Failure 	400 	{object} model.ResponseHTTP{}
 // @Failure 	404 	{object} model.ResponseHTTP{}
 // @Failure 	500 	{object} model.ResponseHTTP{}
-// @Router /posts/{id} [delete]
+// @Router /api/v1/posts/{id} [delete]
 func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 	postID := c.Params("id")
 	if postID == "" {

@@ -55,7 +55,6 @@ func (r *orderRepository) GetByOrderID(orderID string) (*model.Order, error) {
 	return &order, nil
 }
 
-// GetAll retrieves all orders
 func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Order, model.OrdersCount, error) {
 	var orders []*model.Order
 
@@ -68,7 +67,6 @@ func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Ord
 		statusCompleted = "PROJECT COMPLETED"
 	)
 
-	// Building the query based on the status
 	switch status {
 	case "active":
 		tx = tx.Where("status = ?", statusActive)
@@ -85,22 +83,18 @@ func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Ord
 
 	// Get all counts in one database transaction
 	if err := r.db.Transaction(func(tx *gorm.DB) error {
-		// Get total count
 		if err := tx.Model(&model.Order{}).Count(&count.Total).Error; err != nil {
 			return err
 		}
 
-		// Get active count
 		if err := tx.Model(&model.Order{}).Where("status = ?", statusActive).Count(&count.ActiveCount).Error; err != nil {
 			return err
 		}
 
-		// Get complete count
 		if err := tx.Model(&model.Order{}).Where("status = ?", statusCompleted).Count(&count.CompletedCount).Error; err != nil {
 			return err
 		}
 
-		// Calculate pending count
 		count.PendingCount = count.Total - count.ActiveCount - count.CompletedCount
 		return nil
 	}); err != nil {
@@ -110,7 +104,6 @@ func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Ord
 	return orders, count, nil
 }
 
-// GetByUserID retrieves orders by user ID
 func (r *orderRepository) GetByUserID(userID string, offset, limit int) ([]*model.Order, error) {
 	var orders []*model.Order
 
