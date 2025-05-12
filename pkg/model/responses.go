@@ -4,7 +4,6 @@ import (
 	"time"
 )
 
-// ResponseHTTP represents response body of this API
 type ResponseHTTP struct {
 	Data    any    `json:"data"`
 	Message string `json:"message"`
@@ -36,14 +35,15 @@ type OrderResponse struct {
 	FinishType           string         `json:"finish_type"`
 	DeliverySpeed        string         `json:"delivery_speed"`
 	Status               string         `json:"status"`
+	MembershipType       string         `json:"membership_type"`
 	Details              map[string]any `json:"details"`
 	Shots                []string       `json:"shots"`
 	Quantity             int            `json:"quantity"`
 }
 
 type TotalOrderResponse struct {
-	OrderNumbers OrdersCount      `json:"orders_count"`
 	Orders       []*OrderResponse `json:"orders"`
+	OrderNumbers OrdersCount      `json:"orders_count"`
 }
 
 type PostResponse struct {
@@ -58,8 +58,8 @@ type PostResponse struct {
 }
 
 type TotalPostResponse struct {
-	Total int64           `json:"total"`
 	Posts []*PostResponse `json:"posts"`
+	Total int64           `json:"total"`
 }
 
 type UploadImageResponse struct {

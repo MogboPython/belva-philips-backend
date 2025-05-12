@@ -63,8 +63,8 @@ func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Ord
 	tx := r.db.Model(&model.Order{})
 
 	const (
-		statusActive    = "QUOTE RECEIVED"
-		statusCompleted = "PROJECT COMPLETED"
+		statusActive    = "quote_received"
+		statusCompleted = "mark_completed"
 	)
 
 	switch status {
@@ -76,12 +76,10 @@ func (r *orderRepository) GetAll(offset, limit int, status string) ([]*model.Ord
 		tx = tx.Where("status != ? AND status != ?", statusActive, statusCompleted)
 	}
 
-	// Execute the query with pagination
 	if err := tx.Preload("User").Offset(offset).Limit(limit).Find(&orders).Error; err != nil {
 		return nil, count, err
 	}
 
-	// Get all counts in one database transaction
 	if err := r.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Model(&model.Order{}).Count(&count.Total).Error; err != nil {
 			return err

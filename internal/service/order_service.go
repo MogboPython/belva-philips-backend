@@ -50,6 +50,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 		Quantity:           request.Quantity,
 		ShootType:          request.ShootType,
 		Status:             request.Status,
+		MembershipType:     request.MembershipType,
 		Shots:              shotsArray,
 		DeliverySpeed:      request.DeliverySpeed,
 	}
@@ -142,6 +143,7 @@ func mapOrderToResponse(order *model.Order) *model.OrderResponse {
 		Shots:                shotsStringArray,
 		DeliverySpeed:        order.DeliverySpeed,
 		Status:               order.Status,
+		MembershipType:       order.MembershipType,
 		CreatedAt:            order.CreatedAt,
 		UpdatedAt:            order.UpdatedAt,
 	}

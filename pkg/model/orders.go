@@ -25,7 +25,8 @@ type Order struct {
 	ShootType          string         `gorm:"not null" json:"shoot_type"`
 	FinishType         string         `json:"finish_type"`
 	DeliverySpeed      string         `gorm:"default:Standard" json:"delivery_speed"`
-	Status             string         `gorm:"default:QUOTE RECEIVED" json:"status"`
+	MembershipType     string         `gorm:"default:PAY AS YOU GO" json:"membership_type"`
+	Status             string         `gorm:"default:quote_received" json:"status"`
 	Details            datatypes.JSON `gorm:"type:jsonb" json:"details"`
 	Shots              pq.StringArray `gorm:"type:text[]" json:"shots"`
 	Quantity           int            `gorm:"not null" json:"quantity"`
@@ -39,6 +40,7 @@ type OrderRequest struct {
 	FinishType         string         `json:"finish_type" validate:"omitempty"`
 	DeliverySpeed      string         `json:"delivery_speed" validate:"omitempty"`
 	Status             string         `json:"status" validate:"omitempty"`
+	MembershipType     string         `json:"membership_type" validate:"omitempty"`
 	Details            map[string]any `json:"details" validate:"omitempty"`
 	Shots              []string       `json:"shots" validate:"omitempty"`
 	Quantity           int            `json:"quantity" validate:"omitempty"`

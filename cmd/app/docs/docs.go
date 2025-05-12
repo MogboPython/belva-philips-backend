@@ -1199,6 +1199,9 @@ const docTemplate = `{
                 "finish_type": {
                     "type": "string"
                 },
+                "membership_type": {
+                    "type": "string"
+                },
                 "product_description": {
                     "type": "string"
                 },
@@ -1242,6 +1245,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "membership_type": {
                     "type": "string"
                 },
                 "product_description": {

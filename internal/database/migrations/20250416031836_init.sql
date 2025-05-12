@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS public.orders (
     details JSONB,
     shots TEXT[],
     delivery_speed TEXT DEFAULT 'Standard',
-    status TEXT DEFAULT 'QUOTE RECEIVED',
+    status TEXT DEFAULT 'quote_received',
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
 
