@@ -3,7 +3,10 @@ package service
 import (
 	"encoding/json"
 	"fmt"
+	"sync"
+	"time"
 
+	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
@@ -32,6 +35,8 @@ func NewOrderService(orderRepo repository.OrderRepository) OrderService {
 }
 
 func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderResponse, error) {
+	var mails = 2
+
 	detailsBytes, err := json.Marshal(request.Details)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal details: %w", err)
@@ -60,7 +65,70 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 		return nil, err
 	}
 
+	s.sendOrderNotificationEmailsConcurrently(order, mails)
+
 	return mapOrderToResponse(order), nil
+}
+
+func (*orderService) sendOrderNotificationEmailsConcurrently(order *model.Order, mailsToSend int) {
+	// TODO: read this
+	var wg sync.WaitGroup
+
+	wg.Add(mailsToSend)
+
+	go func() {
+		defer wg.Done()
+
+		to := order.User.Email
+		subject := "Your Quote Request at BelvaPhilips Imagery - Confirmation!"
+		data := map[string]string{
+			"Name":        order.User.Name,
+			"ProductName": order.ProductName,
+			"OrderDate":   order.CreatedAt.Format(time.UnixDate),
+		}
+		body, err := utils.ParseTemplate("user_confirmation.html", data)
+
+		if err != nil {
+			log.Errorf("Failed to parse user confirmation email template for Order ID %v: %v", order.ID, err)
+			return
+		}
+
+		_, err = utils.SendEmail(to, subject, body)
+		if err != nil {
+			log.Errorf("Failed to send confirmation email to user %s for Order ID %v: %v", to, order.ID, err)
+			return
+		}
+
+		log.Infof("Successfully sent confirmation email to user %s for Order ID: %v", to, order.ID)
+	}()
+
+	go func() {
+		defer wg.Done()
+
+		toAdmin := config.Config("ADMIN_EMAIL")
+		subjectAdmin := "New Quote Request - Immediate Action Required!"
+		dataAdmin := map[string]string{
+			"OrderID":     order.ID,
+			"ProductName": order.ProductName,
+			"OrderDate":   order.CreatedAt.Format(time.UnixDate),
+		}
+		bodyAdmin, err := utils.ParseTemplate("order_notification.html", dataAdmin)
+
+		if err != nil {
+			log.Errorf("Failed to parse admin notification email template for Order ID %v: %v", order.ID, err)
+			return
+		}
+
+		_, err = utils.SendEmail(toAdmin, subjectAdmin, bodyAdmin)
+		if err != nil {
+			log.Errorf("Failed to send notification email to admin %s for Order ID %v: %v", toAdmin, order.ID, err)
+			return
+		}
+
+		log.Infof("Successfully sent notification email to admin %s for Order ID: %v", toAdmin, order.ID)
+	}()
+
+	wg.Wait()
 }
 
 func (s *orderService) GetAllOrders(pageStr, limitStr, status string) (model.TotalOrderResponse, error) {

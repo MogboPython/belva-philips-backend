@@ -12,7 +12,6 @@ import (
 
 // SendContactEmail sends a contact email to the admin
 func SendContactEmail(req *model.ContactUsRequest) error {
-	// Set up email
 	to := config.Config("ADMIN_EMAIL")
 	subject := fmt.Sprintf("Contact from: %s %s", req.Firstname, req.Lastname)
 	body, err := utils.ParseTemplate("contact.html", req)
@@ -22,7 +21,6 @@ func SendContactEmail(req *model.ContactUsRequest) error {
 		return fmt.Errorf("failed to parse template: %w", err)
 	}
 
-	// Send email
 	_, err = utils.SendEmail(to, subject, body)
 	if err != nil {
 		log.Error("failed to send email: %v", err)

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Form Submission</title>
+    <title>New Quote Request Notification</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -35,27 +35,29 @@
             font-weight: bold;
             color: #333;
         }
-        .content {
-            padding: 15px;
+        .order-details {
             background-color: #f9f9f9;
+            padding: 15px;
             border-radius: 5px;
             margin: 20px 0;
         }
-        .field {
-            margin-bottom: 15px;
+        .login-button {
+            display: block;
+            text-align: center;
+            margin: 25px auto;
         }
-        .field-label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        .message-content {
-            background-color: white;
-            padding: 15px;
+        .login-button a {
+            background-color: #0066cc;
+            color: white;
+            padding: 12px 25px;
+            text-decoration: none;
             border-radius: 5px;
-            border-left: 2px solid #0066cc;
-            white-space: pre-wrap;
-            margin-top: 5px;
+            font-weight: bold;
+            display: inline-block;
+            font-size: 16px;
+        }
+        .login-button a:hover {
+            background-color: #0055aa;
         }
         .footer {
             margin-top: 30px;
@@ -79,28 +81,29 @@
             </div>
         </div>
 
-        <p>You have received a new message from your website's contact form.</p>
+        <p>Hello BelvaPhilips Imagery,</p>
 
-        <div class="content">
-            <div class="field">
-                <div class="field-label">Name:</div>
-                <div>{{.Firstname}} {{.Lastname}}</div>
-            </div>
+        <p>A new order has been placed for a quote request. Please log in to your dashboard to review the order and prepare a quote for the customer.</p>
 
-            <div class="field">
-                <div class="field-label">Email:</div>
-                <div><a href="mailto:{{.Email}}" style="color: #0066cc; text-decoration: none;">{{.Email}}</a></div>
-            </div>
-
-            <div class="field">
-                <div class="field-label">Message:</div>
-                <div class="message-content">{{.Message}}</div>
-            </div>
+        <div class="login-button">
+            <!-- TODO: change to live url -->
+            <a href="https://belva-philips-imagery.com/dashboard" target="_blank">LOG IN TO DASHBOARD</a>
         </div>
+
+        <div class="order-details">
+            <h3>Order Details:</h3>
+            <p><strong>Order ID:</strong> {{.OrderID}}</p>
+            <p><strong>Product Category:</strong> {{.ProductName}}</p>
+            <p><strong>Order Date:</strong> {{.OrderDate}}</p>
+        </div>
+
+        <p>Please review the details and respond with a personalized quote as soon as possible.</p>
+
+        <p>BelvaPhilips Imagery</p>
 
         <div class="footer">
             <p>© 2025 BelvaPhilips Imagery. All rights reserved.</p>
-            <p>This email was sent automatically from your website's contact form.</p>
+            <p>This is an automated notification - please do not reply to this email.</p>
         </div>
     </div>
 </body>

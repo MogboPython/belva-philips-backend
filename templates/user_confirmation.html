@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contact Form Submission</title>
+    <title>Photography Quote Request Confirmation</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -11,15 +11,11 @@
             color: #333333;
             margin: 0;
             padding: 0;
-            background-color: #f4f4f4;
         }
         .email-container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .header {
             text-align: center;
@@ -35,27 +31,14 @@
             font-weight: bold;
             color: #333;
         }
-        .content {
-            padding: 15px;
+        .order-details {
             background-color: #f9f9f9;
+            padding: 15px;
             border-radius: 5px;
             margin: 20px 0;
         }
-        .field {
-            margin-bottom: 15px;
-        }
-        .field-label {
-            font-weight: bold;
-            margin-bottom: 5px;
-            color: #555;
-        }
-        .message-content {
-            background-color: white;
-            padding: 15px;
-            border-radius: 5px;
-            border-left: 2px solid #0066cc;
-            white-space: pre-wrap;
-            margin-top: 5px;
+        .next-steps {
+            margin: 20px 0;
         }
         .footer {
             margin-top: 30px;
@@ -64,6 +47,9 @@
             text-align: center;
             font-size: 14px;
             color: #777;
+        }
+        .highlight {
+            color: #0066cc;
         }
     </style>
 </head>
@@ -79,28 +65,30 @@
             </div>
         </div>
 
-        <p>You have received a new message from your website's contact form.</p>
+        <p>Dear {{.Name}},</p>
 
-        <div class="content">
-            <div class="field">
-                <div class="field-label">Name:</div>
-                <div>{{.Firstname}} {{.Lastname}}</div>
-            </div>
+        <p>Thank you for submitting your request for a photography quote with us at BelvaPhilips Imagery. We've received your order and are currently reviewing the details.</p>
 
-            <div class="field">
-                <div class="field-label">Email:</div>
-                <div><a href="mailto:{{.Email}}" style="color: #0066cc; text-decoration: none;">{{.Email}}</a></div>
-            </div>
-
-            <div class="field">
-                <div class="field-label">Message:</div>
-                <div class="message-content">{{.Message}}</div>
-            </div>
+        <div class="order-details">
+            <h3>Your Order Details:</h3>
+            <p><strong>Product Category:</strong> {{.ProductName}}</p>
+            <p><strong>Order Date:</strong> {{.OrderDate}}</p>
         </div>
+
+        <div class="next-steps">
+            <h3>Next Steps:</h3>
+            <p>Our team will review your request and provide you with a personalized quote shortly. We will contact you via email once your quote is ready.</p>
+            <p>If you have any questions in the meantime, feel free to reach out to us via: <span class="highlight">09021431136</span>.</p>
+        </div>
+
+        <p>Thank you for choosing BelvaPhilips Imagery!</p>
+
+        <p>Best regards,<br>
+        BelvaPhilips Imagery<br>
+        09021431136</p>
 
         <div class="footer">
             <p>© 2025 BelvaPhilips Imagery. All rights reserved.</p>
-            <p>This email was sent automatically from your website's contact form.</p>
         </div>
     </div>
 </body>
