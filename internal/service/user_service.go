@@ -36,12 +36,12 @@ func (s *userService) CreateUser(req *model.CreateUserRequest) (*model.UserRespo
 		ID:          req.ID,
 		Name:        req.Name,
 		Email:       req.Email,
-		Phone:       req.Phone,
+		PhoneNumber: req.Phone,
 		CompanyName: req.CompanyName,
 	}
 
 	if err := s.userRepo.Create(user); err != nil {
-		log.Error("error saving user: %v", err)
+		log.Error("error saving user: ", err)
 		return nil, err
 	}
 
@@ -105,7 +105,7 @@ func mapUserToResponse(user *model.User) *model.UserResponse {
 		ID:          user.ID,
 		Name:        user.Name,
 		Email:       user.Email,
-		Phone:       user.Phone,
+		Phone:       user.PhoneNumber,
 		CompanyName: user.CompanyName,
 		CreatedAt:   user.CreatedAt,
 		UpdatedAt:   user.UpdatedAt,

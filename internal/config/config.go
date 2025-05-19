@@ -8,10 +8,9 @@ import (
 	storage "github.com/supabase-community/storage-go"
 )
 
-// Config func to get env value
 func Config(key string) string {
 	if os.Getenv("FLY_APP_NAME") == "" {
-		err := godotenv.Load()
+		err := godotenv.Load(".env.prod")
 		if err != nil {
 			log.Errorf("Error loading .env file: %v", err)
 		}

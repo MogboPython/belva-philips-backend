@@ -13,7 +13,7 @@ type User struct {
 	Name             string    `gorm:"not null" json:"name"`
 	Email            string    `gorm:"not null;unique" json:"email"`
 	CompanyName      string    `gorm:"not null" json:"company_name"`
-	Phone            string    `gorm:"not null" json:"phone_number"`
+	PhoneNumber      string    `gorm:"not null" json:"phone_number"`
 	MembershipStatus string    `gorm:"default:PAYG" json:"membership_status"`
 }
 
