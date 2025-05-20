@@ -61,7 +61,7 @@ func (s *orderService) CreateOrder(request *model.OrderRequest) (*model.OrderRes
 	}
 
 	if err := s.orderRepo.Create(order); err != nil {
-		log.Error("error saving order:", err)
+		log.Error("error saving order: ", err)
 		return nil, err
 	}
 
@@ -199,6 +199,7 @@ func mapOrderToResponse(order *model.Order) *model.OrderResponse {
 
 	return &model.OrderResponse{
 		ID:                   order.ID,
+		OrderName:            order.OrderName,
 		UserID:               order.User.ID,
 		UserEmail:            order.User.Email,
 		UserMembershipStatus: order.User.MembershipStatus,

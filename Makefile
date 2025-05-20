@@ -19,7 +19,6 @@ run: build
 
 dev:
 	@echo "Running in development mode..."
-	go install github.com/air-verse/air@latest
 	~/go/bin/air -c .air.toml
 
 test:
@@ -34,7 +33,6 @@ test:
 
 swagger:
 	@echo "Generating Swagger documentation..."
-	go install github.com/swaggo/swag/cmd/swag@latest
 	~/go/bin/swag init -g cmd/app/main.go -o ./cmd/app/docs
 
 git:

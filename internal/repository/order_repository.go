@@ -2,10 +2,12 @@ package repository
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -38,11 +40,31 @@ func (r *orderRepository) Create(order *model.Order) error {
 		return errors.New("failed to find user")
 	}
 
-	if err := r.db.Create(&order).Error; err != nil {
+	orderName, err := r.generateUniqueOrderName()
+	if err != nil {
+		return fmt.Errorf("failed to generate order name: %w", err)
+	}
+
+	order.OrderName = orderName
+
+	err = r.db.Create(&order).Error
+	if err != nil {
 		return err
 	}
 
 	return r.db.Model(&order).Association("User").Find(&order.User)
+}
+
+func (*orderRepository) generateUniqueOrderName() (string, error) {
+	now := time.Now()
+	date := now.Format("20060102")
+
+	id, err := uuid.NewRandom()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("BELVA-%s-%s", date, id.String()[:6]), nil
 }
 
 func (r *orderRepository) GetByOrderID(orderID string) (*model.Order, error) {

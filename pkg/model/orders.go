@@ -19,6 +19,7 @@ type Order struct {
 	UpdatedAt          time.Time      `gorm:"autoUpdateTime" json:"updated_at"`
 	User               User           `gorm:"foreignKey:UserID" json:"user"`
 	ID                 string         `gorm:"default:uuid_generate_v4()" json:"id"`
+	OrderName          string         `gorm:"unique;not null" json:"order_name"`
 	UserID             string         `gorm:"type:uuid;not null" json:"user_id"`
 	ProductName        string         `gorm:"not null" json:"product_name"`
 	ProductDescription string         `gorm:"type:text" json:"product_description"`

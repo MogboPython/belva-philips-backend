@@ -27,6 +27,7 @@ type OrderResponse struct {
 	UpdatedAt            time.Time      `json:"updated_at"`
 	ProductDescription   string         `gorm:"type:text" json:"product_description"`
 	ID                   string         `json:"id"`
+	OrderName            string         `json:"order_name"`
 	UserID               string         `json:"user_id"`
 	UserEmail            string         `json:"user_email"`
 	UserMembershipStatus string         `json:"user_membership_status"`

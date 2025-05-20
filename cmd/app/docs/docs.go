@@ -1250,6 +1250,9 @@ const docTemplate = `{
                 "membership_type": {
                     "type": "string"
                 },
+                "order_name": {
+                    "type": "string"
+                },
                 "product_description": {
                     "type": "string"
                 },
