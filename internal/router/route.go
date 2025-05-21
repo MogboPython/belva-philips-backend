@@ -7,9 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-// SetupRoutes func
 func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler *handler.AdminHandler, orderHandler *handler.OrderHandler, postHandler *handler.PostHandler) {
-	// Health check
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.JSON(fiber.Map{"status": "ok"})
 	})
@@ -21,7 +19,6 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 
 	app.Use(swagger.New(swaggerCfg))
 
-	// grouping
 	api := app.Group("/api/v1")
 	api.Post("/admin/login", adminHandler.AdminLogin)
 	api.Post("/contact", handler.ContactUs)

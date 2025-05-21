@@ -51,10 +51,10 @@ func (h *PostHandler) CreatePost(c *fiber.Ctx) error {
 	}
 
 	payload := model.PostRequest{
-		Title:      form.Value["title"][0],
-		Slug:       form.Value["slug"][0],
-		Content:    form.Value["content"][0],
-		Status:     form.Value["status"][0],
+		Title:      getFormValue(form.Value, "title"),
+		Slug:       getFormValue(form.Value, "slug"),
+		Content:    getFormValue(form.Value, "content"),
+		Status:     getFormValue(form.Value, "status"),
 		CoverImage: form.File["cover_image"][0],
 	}
 
@@ -246,11 +246,14 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	}
 
 	payload := model.PostUpdateRequest{
-		Title:      form.Value["title"][0],
-		Slug:       form.Value["slug"][0],
-		Content:    form.Value["content"][0],
-		Status:     form.Value["status"][0],
-		CoverImage: form.File["cover_image"][0],
+		Title:   getFormValue(form.Value, "title"),
+		Slug:    getFormValue(form.Value, "slug"),
+		Content: getFormValue(form.Value, "content"),
+		Status:  getFormValue(form.Value, "status"),
+	}
+
+	if files, exists := form.File["cover_image"]; exists && len(files) > 0 {
+		payload.CoverImage = files[0]
 	}
 
 	if err := h.validator.Validate(payload); err != nil {
@@ -285,6 +288,14 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 	})
 }
 
+func getFormValue(values map[string][]string, key string) string {
+	if vals, exists := values[key]; exists && len(vals) > 0 {
+		return vals[0]
+	}
+
+	return ""
+}
+
 // UploadImage uploads an image for the post body
 //
 //	@Summary		Uploads an image for the post body (strictly for admin)
@@ -304,6 +315,14 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 func (h *PostHandler) UploadImage(c *fiber.Ctx) error {
 	form, err := c.MultipartForm()
 	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Invalid form-data request",
+			Data:    nil,
+		})
+	}
+
+	if _, exists := form.File["image"]; !exists {
 		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
 			Success: false,
 			Message: "Invalid form-data request",

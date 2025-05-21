@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/MogboPython/belvaphilips_backend/internal/config"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 	storage "github.com/supabase-community/storage-go"
@@ -21,6 +22,12 @@ type StorageService interface { //nolint:revive // it works
 type storageService struct {
 	client *storage.Client
 }
+
+var (
+	supabaseURL    = config.Config("SUPABASE_URL")
+	supabaseAPIKey = config.Config("SUPABASE_API_KEY")
+	client         = storage.NewClient(supabaseURL, supabaseAPIKey, nil)
+)
 
 func NewStorageService(client *storage.Client) StorageService {
 	return &storageService{
@@ -78,19 +85,16 @@ func (s *storageService) UploadFile(imageFile *multipart.FileHeader, bucketID st
 	return result.Key, nil
 }
 
-func (s *storageService) RemoveFile(file string) error {
+func (*storageService) RemoveFile(file string) error {
 	var bucketName, fileName string
 
-	const zero, one, two, three = 0, 1, 2, 3
+	const zero, one, two = 0, 1, 2
 
 	filePath := strings.Split(file, "/")
 	switch len(filePath) {
 	case two:
 		bucketName = filePath[0]
 		fileName = filePath[1]
-	case three:
-		bucketName = strings.Join(filePath[0:2], "/")
-		fileName = filePath[2]
 	case zero, one:
 		return errors.New("invalid file path")
 	default:
@@ -98,39 +102,25 @@ func (s *storageService) RemoveFile(file string) error {
 		fileName = strings.Join(filePath[1:], "/")
 	}
 
-	_, err := s.client.RemoveFile(bucketName, []string{fileName})
+	// FIXME: very interesting, it works with client.RemoveFile but not with s.client.RemoveFile
+	_, err := client.RemoveFile(bucketName, []string{fileName})
 
 	if err != nil {
 		log.Error("Error deleting image: ", err)
 		return errors.New("error deleting image")
 	}
 
+	log.Infof("File %s deleted successfully", file)
+
 	return nil
 }
 
-// func (s *storageService) RemoveFolder(folderPath string) error {
-// 	_, err := s.client.EmptyBucket(folderPath)
-
-// 	if err != nil {
-// 		log.Error("Error emptying bucket:", err)
-// 		return errors.New("error emptying bucket")
-// 	}
-
-// 	_, err = s.client.DeleteBucket(folderPath)
-// 	if err != nil {
-// 		log.Error("Error deleting bucket:", err)
-// 		return errors.New("error deleting bucket")
-// 	}
-
-// 	return nil
-// }
-
-func (s *storageService) RemoveFolder(bucketName, folderPath string) error {
+func (*storageService) RemoveFolder(bucketName, folderPath string) error {
 	if folderPath[len(folderPath)-1] != '/' {
 		folderPath += "/"
 	}
 
-	files, err := s.client.ListFiles(bucketName, folderPath, storage.FileSearchOptions{})
+	files, err := client.ListFiles(bucketName, folderPath, storage.FileSearchOptions{})
 	if err != nil {
 		log.Error("Error listing files in folder:", err)
 		return errors.New("error listing folder contents")
@@ -143,12 +133,14 @@ func (s *storageService) RemoveFolder(bucketName, folderPath string) error {
 	}
 
 	if len(filePaths) > 0 {
-		_, err := s.client.RemoveFile(bucketName, filePaths)
+		_, err := client.RemoveFile(bucketName, filePaths)
 		if err != nil {
 			log.Error("Error deleting files:", err)
 			return errors.New("error deleting folder contents")
 		}
 	}
+
+	log.Infof("Files in %s deleted successfully", folderPath)
 
 	return nil
 }
