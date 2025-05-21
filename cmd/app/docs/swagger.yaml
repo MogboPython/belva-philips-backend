@@ -684,6 +684,65 @@ paths:
       summary: Get post by ID
       tags:
       - posts
+    put:
+      consumes:
+      - multipart/form-data
+      description: Update a blog post with the provided information
+      parameters:
+      - description: Title of the post
+        in: formData
+        name: title
+        required: true
+        type: string
+      - description: Slug of the post
+        in: formData
+        name: slug
+        required: true
+        type: string
+      - description: Content of the post
+        in: formData
+        name: content
+        required: true
+        type: string
+      - description: Status of the post (draft/published)
+        in: formData
+        name: status
+        required: true
+        type: string
+      - description: Cover image for the post
+        in: formData
+        name: cover_image
+        required: true
+        type: file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.PostResponse'
+              type: object
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Update blog post (strictly for admin)
+      tags:
+      - posts
   /api/v1/posts/drafts:
     get:
       consumes:

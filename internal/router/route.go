@@ -54,10 +54,11 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 		post.Post("/upload-image", middleware.Protected(), middleware.AdminRole(), postHandler.UploadImage)
 		post.Post("/", middleware.Protected(), middleware.AdminRole(), postHandler.CreatePost)
 		post.Get("/drafts", middleware.Protected(), middleware.AdminRole(), postHandler.GetAllDraftPosts)
+		post.Put("/:id", middleware.Protected(), middleware.AdminRole(), postHandler.UpdatePost)
+		post.Delete("/:id", middleware.Protected(), middleware.AdminRole(), postHandler.DeletePost)
 
 		post.Get("/", postHandler.GetAllPosts)
 		post.Get("/:id", postHandler.GetPostByID)
-		post.Delete("/:id", middleware.Protected(), middleware.AdminRole(), postHandler.DeletePost)
 	}
 
 	// handle unavailable route

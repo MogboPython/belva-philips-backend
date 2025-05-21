@@ -1,7 +1,11 @@
 package repository
 
 import (
+	"errors"
+	"strings"
+
 	"github.com/MogboPython/belvaphilips_backend/internal/storage"
+	"github.com/lib/pq"
 
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
 	"github.com/gofiber/fiber/v2/log"
@@ -12,7 +16,7 @@ type PostRepository interface {
 	Create(post *model.Post) error
 	GetByID(postID string) (*model.Post, error)
 	GetAllDrafts(offset, limit int) ([]*model.Post, int64, error)
-	UpdatePost(post *model.Post) error
+	Update(post *model.Post) error
 	GetAll(offset, limit int) ([]*model.Post, int64, error)
 	Delete(postID string) error
 }
@@ -29,24 +33,26 @@ func NewPostRepository(db *gorm.DB, storageService storage.StorageService) PostR
 	}
 }
 
-// Create inserts a new post into the database
 func (r *postRepository) Create(post *model.Post) error {
 	err := r.db.Create(&post).Error
 	return err
 }
 
-// GetByID retrieves a post by ID
 func (r *postRepository) GetByID(id string) (*model.Post, error) {
 	var post model.Post
 
-	if err := r.db.First(&post, "id = ?", id).Error; err != nil {
+	err := r.db.Where("id = ?", id).First(&post).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("post not found")
+		}
+
 		return nil, err
 	}
 
 	return &post, nil
 }
 
-// GetAll retrieves all published posts
 func (r *postRepository) GetAll(offset, limit int) ([]*model.Post, int64, error) {
 	var posts []*model.Post
 
@@ -64,7 +70,6 @@ func (r *postRepository) GetAll(offset, limit int) ([]*model.Post, int64, error)
 	return posts, count, nil
 }
 
-// GetAllDrafts retrieves all drafts
 func (r *postRepository) GetAllDrafts(offset, limit int) ([]*model.Post, int64, error) {
 	var posts []*model.Post
 
@@ -82,25 +87,43 @@ func (r *postRepository) GetAllDrafts(offset, limit int) ([]*model.Post, int64, 
 	return posts, count, nil
 }
 
-func (r *postRepository) UpdatePost(post *model.Post) error {
-	return r.db.Save(&post).Error
+func (r *postRepository) Update(post *model.Post) error {
+	err := r.db.Save(post).Error
+	if err != nil {
+		if isDuplicateError(err) {
+			return errors.New("slug already exists")
+		}
+
+		return err
+	}
+
+	return nil
+}
+
+func isDuplicateError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	if pqErr, ok := err.(*pq.Error); ok {
+		return pqErr.Code == "23505"
+	}
+
+	return strings.Contains(err.Error(), "duplicate key")
 }
 
 func (r *postRepository) Delete(postID string) error {
-	// Use a transaction to ensure both the database record and file operations are atomic
 	return r.db.Transaction(func(tx *gorm.DB) error {
 		var post model.Post
 		if err := tx.Where("id = ?", postID).First(&post).Error; err != nil {
 			return err
 		}
 
-		// Delete the post record
 		// TODO: also delete folder with post ID
 		if err := tx.Delete(&post).Error; err != nil {
 			return err
 		}
 
-		// If post has a cover image, remove the file
 		if post.CoverImage != "" {
 			if err := r.storageService.RemoveFile(post.CoverImage); err != nil {
 				log.Warnf("Failed to delete cover image %s for post %s: %v",

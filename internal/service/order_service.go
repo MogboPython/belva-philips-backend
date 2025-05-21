@@ -191,10 +191,12 @@ func mapOrderToResponse(order *model.Order) *model.OrderResponse {
 
 	shotsStringArray := []string(order.Shots)
 
-	if err := json.Unmarshal(order.Details, &detailsMap); err != nil {
-		detailsMap = nil
+	if order.Details != nil {
+		if err := json.Unmarshal(order.Details, &detailsMap); err != nil {
+			detailsMap = nil
 
-		log.Error("error unmarshaling order details: %v", err)
+			log.Error("error unmarshaling order details: ", err)
+		}
 	}
 
 	return &model.OrderResponse{

@@ -178,7 +178,7 @@ func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 
 	post, err := h.postService.GetPostByID(id)
 	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		if strings.Contains(err.Error(), "post not found") {
 			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
 				Success: false,
 				Message: "Post not found",
@@ -204,6 +204,83 @@ func (h *PostHandler) GetPostByID(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
 		Success: true,
 		Message: "Successfully found post",
+		Data:    *post,
+	})
+}
+
+// @Summary		Update blog post (strictly for admin)
+// @Description	Update a blog post with the provided information
+// @Tags			posts
+//
+// @Security		BearerAuth
+//
+// @Accept			multipart/form-data
+// @Produce		json
+// @Param			title		formData	string	true	"Title of the post"
+// @Param			slug		formData	string	true	"Slug of the post"
+// @Param			content		formData	string	true	"Content of the post"
+// @Param			status		formData	string	true	"Status of the post (draft/published)"
+// @Param			cover_image	formData	file	true	"Cover image for the post"
+// @Success		200			{object}	model.ResponseHTTP{data=model.PostResponse}
+// @Failure		400			{object}	model.ResponseHTTP{}
+// @Failure		404			{object}	model.ResponseHTTP{}
+// @Failure		500			{object}	model.ResponseHTTP{}
+// @Router			/api/v1/posts/{id} [put]
+func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
+	id := c.Params("id")
+	if id == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "post ID is required",
+			Data:    nil,
+		})
+	}
+
+	form, err := c.MultipartForm()
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Invalid form-data request",
+			Data:    nil,
+		})
+	}
+
+	payload := model.PostRequest{
+		Title:      form.Value["title"][0],
+		Slug:       form.Value["slug"][0],
+		Content:    form.Value["content"][0],
+		Status:     form.Value["status"][0],
+		CoverImage: form.File["cover_image"][0],
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	post, err := h.postService.UpdatePost(id, &payload)
+	if err != nil {
+		if strings.Contains(err.Error(), "post not found") {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Post not found",
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusOK).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully updated post",
 		Data:    *post,
 	})
 }
@@ -273,20 +350,20 @@ func (h *PostHandler) UploadImage(c *fiber.Ctx) error {
 
 // DeletePost deletes a post by ID
 //
-// @Summary Delete a post
-// @Description Delete a post by ID
-// @Tags posts
+//	@Summary		Delete a post
+//	@Description	Delete a post by ID
+//	@Tags			posts
 //
 //	@Security		BearerAuth
 //
-// @Accept json
-// @Produce json
-// @Param		id		path	string	true	"Post ID"
-// @Success 	204 	{object} model.ResponseHTTP{}
-// @Failure 	400 	{object} model.ResponseHTTP{}
-// @Failure 	404 	{object} model.ResponseHTTP{}
-// @Failure 	500 	{object} model.ResponseHTTP{}
-// @Router /api/v1/posts/{id} [delete]
+//	@Accept			json
+//	@Produce		json
+//	@Param			id	path		string	true	"Post ID"
+//	@Success		204	{object}	model.ResponseHTTP{}
+//	@Failure		400	{object}	model.ResponseHTTP{}
+//	@Failure		404	{object}	model.ResponseHTTP{}
+//	@Failure		500	{object}	model.ResponseHTTP{}
+//	@Router			/api/v1/posts/{id} [delete]
 func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 	postID := c.Params("id")
 	if postID == "" {

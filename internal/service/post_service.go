@@ -17,6 +17,7 @@ type PostService interface {
 	GetPostByID(id string) (*model.PostResponse, error)
 	GetAllDrafts(pageStr, limitStr string) (model.TotalPostResponse, error)
 	GetAllPosts(page, limit string) (model.TotalPostResponse, error)
+	UpdatePost(id string, update *model.PostRequest) (*model.PostResponse, error)
 	UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error)
 	DeletePost(id string) error
 }
@@ -111,27 +112,35 @@ func (s *postService) GetPostByID(id string) (*model.PostResponse, error) {
 	return mapPostToResponse(post), nil
 }
 
-// TODO: a lot to work on here
-func (s *postService) UpdatePost(id string, req *model.PostRequest) (*model.PostResponse, error) {
+func (s *postService) UpdatePost(id string, update *model.PostRequest) (*model.PostResponse, error) {
 	post, err := s.postRepo.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find post: %w", err)
 	}
 
-	// TODO: Check if there was a cover image before then delete now
-
-	coverImageURL, err := s.storageService.UploadFile(req.CoverImage, "blog-cover-photos")
-
+	coverImageURL, err := s.storageService.UploadFile(update.CoverImage, "blog-cover-photos", post.ID)
 	if err != nil {
 		log.Error("error uploading image: %v", err)
 		return nil, err
 	}
 
-	post.Title = req.Title
-	post.Slug = req.Slug
-	post.Content = req.Content
+	if post.CoverImage != "" {
+		if err := s.storageService.RemoveFile(post.CoverImage); err != nil {
+			log.Warnf("Failed to delete cover image %s for post %s: %v",
+				post.CoverImage, post.ID, err)
+		}
+	}
+
+	post.Title = update.Title
+	post.Slug = update.Slug
+	post.Content = update.Content
 	post.CoverImage = coverImageURL
-	post.Status = req.Status
+	post.Status = update.Status
+
+	if err := s.postRepo.Update(post); err != nil {
+		log.Error("error saving post: ", err)
+		return nil, err
+	}
 
 	return mapPostToResponse(post), nil
 }
