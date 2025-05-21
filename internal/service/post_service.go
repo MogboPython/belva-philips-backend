@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
 	"github.com/MogboPython/belvaphilips_backend/internal/storage"
@@ -17,7 +18,7 @@ type PostService interface {
 	GetPostByID(id string) (*model.PostResponse, error)
 	GetAllDrafts(pageStr, limitStr string) (model.TotalPostResponse, error)
 	GetAllPosts(page, limit string) (model.TotalPostResponse, error)
-	UpdatePost(id string, update *model.PostRequest) (*model.PostResponse, error)
+	UpdatePost(id string, update *model.PostUpdateRequest) (*model.PostResponse, error)
 	UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error)
 	DeletePost(id string) error
 }
@@ -112,30 +113,33 @@ func (s *postService) GetPostByID(id string) (*model.PostResponse, error) {
 	return mapPostToResponse(post), nil
 }
 
-func (s *postService) UpdatePost(id string, update *model.PostRequest) (*model.PostResponse, error) {
+func (s *postService) UpdatePost(id string, update *model.PostUpdateRequest) (*model.PostResponse, error) {
 	post, err := s.postRepo.GetByID(id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find post: %w", err)
 	}
 
-	coverImageURL, err := s.storageService.UploadFile(update.CoverImage, "blog-cover-photos", post.ID)
-	if err != nil {
-		log.Error("error uploading image: %v", err)
-		return nil, err
-	}
-
-	if post.CoverImage != "" {
-		if err := s.storageService.RemoveFile(post.CoverImage); err != nil {
-			log.Warnf("Failed to delete cover image %s for post %s: %v",
-				post.CoverImage, post.ID, err)
+	if update.CoverImage != nil {
+		newCoverImageURL, err := s.storageService.UploadFile(update.CoverImage, "blog-cover-photos", post.ID)
+		if err != nil {
+			log.Errorf("Failed to upload new cover image: %v", err)
+			return nil, fmt.Errorf("failed to upload cover image: %w", err)
 		}
+
+		if post.CoverImage != "" {
+			if err := s.storageService.RemoveFile(post.CoverImage); err != nil {
+				log.Warnf("Failed to delete old cover image %s for post %s: %v", post.CoverImage, post.ID, err)
+			}
+		}
+
+		post.CoverImage = newCoverImageURL
 	}
 
 	post.Title = update.Title
 	post.Slug = update.Slug
 	post.Content = update.Content
-	post.CoverImage = coverImageURL
 	post.Status = update.Status
+	post.UpdatedAt = time.Now()
 
 	if err := s.postRepo.Update(post); err != nil {
 		log.Error("error saving post: ", err)

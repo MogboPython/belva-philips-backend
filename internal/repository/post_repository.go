@@ -119,16 +119,18 @@ func (r *postRepository) Delete(postID string) error {
 			return err
 		}
 
-		// TODO: also delete folder with post ID
 		if err := tx.Delete(&post).Error; err != nil {
 			return err
 		}
 
 		if post.CoverImage != "" {
-			if err := r.storageService.RemoveFile(post.CoverImage); err != nil {
-				log.Warnf("Failed to delete cover image %s for post %s: %v",
-					post.CoverImage, postID, err)
+			if err := r.storageService.RemoveFolder("blog-cover-photos", post.ID); err != nil {
+				log.Warnf("Failed to delete cover image %s for post %s: %v", post.CoverImage, postID, err)
 			}
+		}
+
+		if err := r.storageService.RemoveFolder("blog-body-photos", post.Slug); err != nil {
+			log.Warnf("Failed to delete body image for post %s: %v", postID, err)
 		}
 
 		return nil

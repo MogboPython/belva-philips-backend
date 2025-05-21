@@ -12,10 +12,10 @@ import (
 	storage "github.com/supabase-community/storage-go"
 )
 
-type StorageService interface {
+type StorageService interface { //nolint:revive // it works
 	UploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...string) (string, error)
 	RemoveFile(file string) error
-	RemoveFolder(folderPath string) error
+	RemoveFolder(bucketName, folderPath string) error
 }
 
 type storageService struct {
@@ -81,13 +81,16 @@ func (s *storageService) UploadFile(imageFile *multipart.FileHeader, bucketID st
 func (s *storageService) RemoveFile(file string) error {
 	var bucketName, fileName string
 
-	const zero, one, two = 0, 1, 2
+	const zero, one, two, three = 0, 1, 2, 3
 
 	filePath := strings.Split(file, "/")
 	switch len(filePath) {
 	case two:
 		bucketName = filePath[0]
 		fileName = filePath[1]
+	case three:
+		bucketName = strings.Join(filePath[0:2], "/")
+		fileName = filePath[2]
 	case zero, one:
 		return errors.New("invalid file path")
 	default:
@@ -105,18 +108,46 @@ func (s *storageService) RemoveFile(file string) error {
 	return nil
 }
 
-func (s *storageService) RemoveFolder(folderPath string) error {
-	_, err := s.client.EmptyBucket(folderPath)
+// func (s *storageService) RemoveFolder(folderPath string) error {
+// 	_, err := s.client.EmptyBucket(folderPath)
 
-	if err != nil {
-		log.Error("Error emptying bucket:", err)
-		return errors.New("error emptying bucket")
+// 	if err != nil {
+// 		log.Error("Error emptying bucket:", err)
+// 		return errors.New("error emptying bucket")
+// 	}
+
+// 	_, err = s.client.DeleteBucket(folderPath)
+// 	if err != nil {
+// 		log.Error("Error deleting bucket:", err)
+// 		return errors.New("error deleting bucket")
+// 	}
+
+// 	return nil
+// }
+
+func (s *storageService) RemoveFolder(bucketName, folderPath string) error {
+	if folderPath[len(folderPath)-1] != '/' {
+		folderPath += "/"
 	}
 
-	_, err = s.client.DeleteBucket(folderPath)
+	files, err := s.client.ListFiles(bucketName, folderPath, storage.FileSearchOptions{})
 	if err != nil {
-		log.Error("Error deleting bucket:", err)
-		return errors.New("error deleting bucket")
+		log.Error("Error listing files in folder:", err)
+		return errors.New("error listing folder contents")
+	}
+
+	filePaths := make([]string, 0, len(files))
+
+	for i := range files {
+		filePaths = append(filePaths, folderPath+files[i].Name)
+	}
+
+	if len(filePaths) > 0 {
+		_, err := s.client.RemoveFile(bucketName, filePaths)
+		if err != nil {
+			log.Error("Error deleting files:", err)
+			return errors.New("error deleting folder contents")
+		}
 	}
 
 	return nil

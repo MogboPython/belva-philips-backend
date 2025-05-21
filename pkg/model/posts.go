@@ -6,11 +6,19 @@ import (
 )
 
 type PostRequest struct {
-	CoverImage *multipart.FileHeader `form:"cover_image" validate:"omitempty"`
+	CoverImage *multipart.FileHeader `form:"cover_image" validate:"required"`
 	Title      string                `form:"title" validate:"required"`
 	Slug       string                `form:"slug" validate:"required"`
-	Content    string                `form:"content" validate:"omitempty"`
-	Status     string                `form:"status" validate:"omitempty"`
+	Content    string                `form:"content" validate:"required"`
+	Status     string                `form:"status" validate:"required"`
+}
+
+type PostUpdateRequest struct {
+	CoverImage *multipart.FileHeader `form:"cover_image" validate:"omitempty"`
+	Title      string                `json:"title" validate:"required"`
+	Slug       string                `json:"slug" validate:"required"`
+	Content    string                `json:"content" validate:"omitempty"`
+	Status     string                `json:"status" validate:"omitempty"`
 }
 
 type Post struct {

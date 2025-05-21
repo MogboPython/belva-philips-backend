@@ -245,7 +245,7 @@ func (h *PostHandler) UpdatePost(c *fiber.Ctx) error {
 		})
 	}
 
-	payload := model.PostRequest{
+	payload := model.PostUpdateRequest{
 		Title:      form.Value["title"][0],
 		Slug:       form.Value["slug"][0],
 		Content:    form.Value["content"][0],
