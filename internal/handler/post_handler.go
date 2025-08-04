@@ -414,3 +414,176 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 		Data:    nil,
 	})
 }
+
+// @Summary		Create a new gallery (strictly for admin)
+// @Description	Create a new gallery with the provided information
+// @Tags			gallery
+//
+// @Security		BearerAuth
+//
+// @Accept			json
+// @Produce		json
+// @Param			request	body		model.GalleryRequest	true	"User information"
+// @Success		201		{object}	model.ResponseHTTP{data=model.GalleryResponse}
+// @Failure		400		{object}	model.ResponseHTTP{}
+// @Failure		500		{object}	model.ResponseHTTP{}
+// @Router			/api/v1/gallery [post]
+func (h *PostHandler) CreateGallery(c *fiber.Ctx) error {
+	var payload model.GalleryRequest
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	gallery, err := h.postService.CreateGallery(&payload)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Gallery with this slug exists",
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully saved gallery",
+		Data:    *gallery,
+	})
+}
+
+// @Summary		Get gallery by Slug
+// @Description	Get gallery by Slug
+// @Tags			gallery
+//
+// @Accept			json
+// @Produce		json
+// @Param			slug	path		string	true	"slug"
+// @Success		200		{object}	model.ResponseHTTP{data=model.GalleryResponse}
+// @Failure		404		{object}	model.ResponseHTTP{}
+// @Failure		500		{object}	model.ResponseHTTP{}
+// @Router			/api/v1/gallery/{slug} [get]
+func (h *PostHandler) GetGalleryBySlug(c *fiber.Ctx) error {
+	slug := c.Params("slug")
+
+	gallery, err := h.postService.GetGalleryBySlug(slug)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Gallery not found",
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully found gallery.",
+		Data:    *gallery,
+	})
+}
+
+// @Summary		Get all gallery (strictly for admin)
+// @Description	Fetch a paginated list of galleries from the database
+// @Tags			gallery
+//
+// @Security		BearerAuth
+//
+// @Accept			json
+// @Produce		json
+// @Param			page	query		int	false	"Page number (default is 1)"
+// @Param			limit	query		int	false	"Number of gallery object per page (default is 10)"
+// @Success		200		{array}		model.ResponseHTTP{data=model.TotalGalleryResponse}
+// @Failure		500		{object}	model.ResponseHTTP{}
+// @Router			/api/v1/gallery [get]
+func (h *PostHandler) GetAllGalleries(c *fiber.Ctx) error {
+	pageStr := c.Query("page", "1")
+	limitStr := c.Query("limit", "10")
+
+	galleries, err := h.postService.GetAllGalleries(pageStr, limitStr)
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully retrieved galleries.",
+		Data:    galleries,
+	})
+}
+
+// @Summary		Delete a gallery (strictly for admin)
+// @Description	Delete a gallery by ID
+// @Tags			gallery
+//
+// @Security		BearerAuth
+//
+// @Accept			json
+// @Produce		json
+// @Param			id	path		string	true	"Gallery ID"
+// @Success		204	{object}	model.ResponseHTTP{}
+// @Failure		400	{object}	model.ResponseHTTP{}
+// @Failure		404	{object}	model.ResponseHTTP{}
+// @Failure		500	{object}	model.ResponseHTTP{}
+// @Router			/api/v1/gallery/{id} [delete]
+func (h *PostHandler) DeleteGallery(c *fiber.Ctx) error {
+	galleryID := c.Params("id")
+	if galleryID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Gallery ID is required",
+		})
+	}
+
+	err := h.postService.DeleteGallery(galleryID)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Gallery not found",
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusNoContent).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully deleted gallery",
+		Data:    nil,
+	})
+}

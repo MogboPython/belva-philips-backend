@@ -57,6 +57,13 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 		post.Get("/", postHandler.GetAllPosts)
 		post.Get("/:id", postHandler.GetPostByID)
 	}
+	{
+		gallery := api.Group("/gallery")
+		gallery.Get("/:slug", postHandler.GetGalleryBySlug)
+		gallery.Get("/", middleware.Protected(), middleware.AdminRole(), postHandler.GetAllGalleries)
+		gallery.Post("/", middleware.Protected(), middleware.AdminRole(), postHandler.CreateGallery)
+		gallery.Delete("/:id", middleware.Protected(), middleware.AdminRole(), postHandler.DeleteGallery)
+	}
 
 	// handle unavailable route
 	app.Use(func(c *fiber.Ctx) error {

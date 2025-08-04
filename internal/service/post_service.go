@@ -11,6 +11,7 @@ import (
 	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
+	"github.com/lib/pq"
 )
 
 type PostService interface {
@@ -21,6 +22,11 @@ type PostService interface {
 	UpdatePost(id string, update *model.PostUpdateRequest) (*model.PostResponse, error)
 	UploadImageFile(req *model.UploadImageRequest) (*model.UploadImageResponse, error)
 	DeletePost(id string) error
+
+	CreateGallery(req *model.GalleryRequest) (*model.GalleryResponse, error)
+	GetAllGalleries(page, limit string) (model.TotalGalleryResponse, error)
+	DeleteGallery(id string) error
+	GetGalleryBySlug(slug string) (*model.GalleryResponse, error)
 }
 
 type postService struct {
@@ -203,5 +209,71 @@ func mapPostToResponse(post *model.Post) *model.PostResponse {
 		Status:     post.Status,
 		CreatedAt:  post.CreatedAt,
 		UpdatedAt:  post.UpdatedAt,
+	}
+}
+
+func (s *postService) CreateGallery(req *model.GalleryRequest) (*model.GalleryResponse, error) {
+	gallery := &model.Gallery{
+		Title:  req.Title,
+		Slug:   req.Slug,
+		Images: pq.StringArray(req.Images),
+	}
+
+	if err := s.postRepo.CreateGallery(gallery); err != nil {
+		log.Error("error saving gallery: ", err)
+		return nil, err
+	}
+
+	return mapGalleryToResponse(gallery), nil
+}
+
+func (s postService) GetAllGalleries(pageStr, limitStr string) (model.TotalGalleryResponse, error) {
+	var totalGalleryResponse model.TotalGalleryResponse
+
+	offset, limit := utils.GetPageAndLimitInt(pageStr, limitStr)
+
+	galleries, count, err := s.postRepo.GetAllGalleries(offset, limit)
+	if err != nil {
+		return totalGalleryResponse, fmt.Errorf("failed to get galleries: %w", err)
+	}
+
+	galleryResponses := make([]*model.GalleryResponse, len(galleries))
+	for i, gallery := range galleries {
+		galleryResponses[i] = mapGalleryToResponse(gallery)
+	}
+
+	totalGalleryResponse.Galleries = galleryResponses
+	totalGalleryResponse.Total = count
+
+	return totalGalleryResponse, nil
+}
+
+func (s *postService) DeleteGallery(id string) error {
+	if err := s.postRepo.DeleteGallery(id); err != nil {
+		log.Errorf("Failed to delete gallery %s: %v", id, err)
+		return err
+	}
+
+	return nil
+}
+
+func (s *postService) GetGalleryBySlug(slug string) (*model.GalleryResponse, error) {
+	gallery, err := s.postRepo.GetGalleryBySlug(slug)
+	if err != nil {
+		log.Error("failed to find gallery:", err)
+		return nil, fmt.Errorf("failed to find gallery: %w", err)
+	}
+
+	return mapGalleryToResponse(gallery), nil
+}
+
+func mapGalleryToResponse(gallery *model.Gallery) *model.GalleryResponse {
+	return &model.GalleryResponse{
+		ID:        gallery.ID,
+		Title:     gallery.Title,
+		Slug:      gallery.Slug,
+		Images:    gallery.Images,
+		CreatedAt: gallery.CreatedAt,
+		UpdatedAt: gallery.UpdatedAt,
 	}
 }

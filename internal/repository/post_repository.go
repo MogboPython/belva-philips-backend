@@ -19,6 +19,11 @@ type PostRepository interface {
 	Update(post *model.Post) error
 	GetAll(offset, limit int) ([]*model.Post, int64, error)
 	Delete(postID string) error
+
+	CreateGallery(gallery *model.Gallery) error
+	GetAllGalleries(offset, limit int) ([]*model.Gallery, int64, error)
+	DeleteGallery(id string) error
+	GetGalleryBySlug(slug string) (*model.Gallery, error)
 }
 
 type postRepository struct {
@@ -134,5 +139,48 @@ func (r *postRepository) Delete(postID string) error {
 		}
 
 		return nil
+	})
+}
+
+func (r *postRepository) CreateGallery(gallery *model.Gallery) error {
+	err := r.db.Create(&gallery).Error
+	return err
+}
+
+func (r *postRepository) GetGalleryBySlug(slug string) (*model.Gallery, error) {
+	var gallery model.Gallery
+
+	err := r.db.Where("slug = ?", slug).First(&gallery).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("gallery object not found")
+		}
+
+		return nil, err
+	}
+
+	return &gallery, nil
+}
+
+func (r *postRepository) GetAllGalleries(offset, limit int) ([]*model.Gallery, int64, error) {
+	var galleries []*model.Gallery
+
+	var count int64
+
+	if err := r.db.Offset(offset).Limit(limit).Find(&galleries).Count(&count).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return galleries, count, nil
+}
+
+func (r *postRepository) DeleteGallery(id string) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		var gallery model.Gallery
+		if err := tx.Where("id = ?", id).First(&gallery).Error; err != nil {
+			return err
+		}
+
+		return tx.Delete(&gallery).Error
 	})
 }
