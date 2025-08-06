@@ -39,9 +39,10 @@ func main() {
 		log.Errorf("Failed to connect to the database: %v", err)
 	}
 
-	if err := database.MigrateDB(); err != nil {
-		log.Errorf("Failed to migrate database: %v", err)
-	}
+	// TODO: Uncomment the migration line when the database schema is ready
+	// if err := database.MigrateDB(); err != nil {
+	// 	log.Errorf("Failed to migrate database: %v", err)
+	// }
 
 	db := database.DB
 	storageClient := config.CreateStorageClient()
