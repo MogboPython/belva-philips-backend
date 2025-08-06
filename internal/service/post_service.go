@@ -25,8 +25,9 @@ type PostService interface {
 
 	CreateGallery(req *model.GalleryRequest) (*model.GalleryResponse, error)
 	GetAllGalleries(page, limit string) (model.TotalGalleryResponse, error)
-	DeleteGallery(id string) error
 	GetGalleryBySlug(slug string) (*model.GalleryResponse, error)
+	UpdateGallery(id string, update *model.GalleryUpdateRequest) (*model.GalleryResponse, error)
+	DeleteGallery(id string) error
 }
 
 type postService struct {
@@ -262,6 +263,25 @@ func (s *postService) GetGalleryBySlug(slug string) (*model.GalleryResponse, err
 	if err != nil {
 		log.Error("failed to find gallery:", err)
 		return nil, fmt.Errorf("failed to find gallery: %w", err)
+	}
+
+	return mapGalleryToResponse(gallery), nil
+}
+
+func (s *postService) UpdateGallery(id string, update *model.GalleryUpdateRequest) (*model.GalleryResponse, error) {
+	gallery, err := s.postRepo.GetGalleryByID(id)
+	if err != nil {
+		return nil, fmt.Errorf("failed to find gallery: %w", err)
+	}
+
+	gallery.Title = update.Title
+	gallery.Slug = update.Slug
+	gallery.Images = update.Images
+	gallery.UpdatedAt = time.Now()
+
+	if err := s.postRepo.UpdateGallery(gallery); err != nil {
+		log.Error("error saving gallery: ", err)
+		return nil, err
 	}
 
 	return mapGalleryToResponse(gallery), nil

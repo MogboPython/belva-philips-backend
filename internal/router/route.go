@@ -62,6 +62,7 @@ func SetupRoutes(app *fiber.App, userHandler *handler.UserHandler, adminHandler 
 		gallery.Get("/:slug", postHandler.GetGalleryBySlug)
 		gallery.Get("/", middleware.Protected(), middleware.AdminRole(), postHandler.GetAllGalleries)
 		gallery.Post("/", middleware.Protected(), middleware.AdminRole(), postHandler.CreateGallery)
+		gallery.Put("/:id", middleware.Protected(), middleware.AdminRole(), postHandler.UpdateGallery)
 		gallery.Delete("/:id", middleware.Protected(), middleware.AdminRole(), postHandler.DeleteGallery)
 	}
 

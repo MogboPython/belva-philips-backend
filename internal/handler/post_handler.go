@@ -542,6 +542,66 @@ func (h *PostHandler) GetAllGalleries(c *fiber.Ctx) error {
 	})
 }
 
+// @Summary		Update a gallery (strictly for admin)
+//
+//	@Description	Update the details of a gallery
+//	@Tags			gallery
+//
+//	@Security		BearerAuth
+//
+//	@Accept			json
+//	@Produce		json
+//	@Param			id		path		string							true	"Gallery ID"
+//	@Param			status	body		model.GalleryUpdateRequest	true	"Gallery update"
+//	@Success		200		{object}	model.ResponseHTTP{data=model.GalleryResponse}
+//	@Failure		404		{object}	model.ResponseHTTP{}
+//	@Failure		500		{object}	model.ResponseHTTP{}
+//	@Router			/api/v1/gallery/{id} [put]
+func (h *PostHandler) UpdateGallery(c *fiber.Ctx) error {
+	id := c.Params("id")
+
+	var payload model.GalleryUpdateRequest
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	gallery, err := h.postService.UpdateGallery(id, &payload)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Gallery not found",
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusCreated).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully updated gallery details",
+		Data:    *gallery,
+	})
+}
+
 // @Summary		Delete a gallery (strictly for admin)
 // @Description	Delete a gallery by ID
 // @Tags			gallery

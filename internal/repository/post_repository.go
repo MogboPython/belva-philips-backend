@@ -22,8 +22,10 @@ type PostRepository interface {
 
 	CreateGallery(gallery *model.Gallery) error
 	GetAllGalleries(offset, limit int) ([]*model.Gallery, int64, error)
-	DeleteGallery(id string) error
+	GetGalleryByID(id string) (*model.Gallery, error)
 	GetGalleryBySlug(slug string) (*model.Gallery, error)
+	UpdateGallery(gallery *model.Gallery) error
+	DeleteGallery(id string) error
 }
 
 type postRepository struct {
@@ -147,6 +149,21 @@ func (r *postRepository) CreateGallery(gallery *model.Gallery) error {
 	return err
 }
 
+func (r *postRepository) GetGalleryByID(id string) (*model.Gallery, error) {
+	var gallery model.Gallery
+
+	err := r.db.Where("id = ?", id).First(&gallery).Error
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("gallery not found")
+		}
+
+		return nil, err
+	}
+
+	return &gallery, nil
+}
+
 func (r *postRepository) GetGalleryBySlug(slug string) (*model.Gallery, error) {
 	var gallery model.Gallery
 
@@ -172,6 +189,19 @@ func (r *postRepository) GetAllGalleries(offset, limit int) ([]*model.Gallery, i
 	}
 
 	return galleries, count, nil
+}
+
+func (r *postRepository) UpdateGallery(gallery *model.Gallery) error {
+	err := r.db.Save(gallery).Error
+	if err != nil {
+		if isDuplicateError(err) {
+			return errors.New("slug already exists")
+		}
+
+		return err
+	}
+
+	return nil
 }
 
 func (r *postRepository) DeleteGallery(id string) error {

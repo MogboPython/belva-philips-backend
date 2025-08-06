@@ -75,6 +75,20 @@ definitions:
       updated_at:
         type: string
     type: object
+  model.GalleryUpdateRequest:
+    properties:
+      images:
+        items:
+          type: string
+        type: array
+      slug:
+        type: string
+      title:
+        type: string
+    required:
+    - slug
+    - title
+    type: object
   model.MembershipStatusChangeRequest:
     properties:
       membership_status:
@@ -473,6 +487,47 @@ paths:
       security:
       - BearerAuth: []
       summary: Delete a gallery (strictly for admin)
+      tags:
+      - gallery
+    put:
+      consumes:
+      - application/json
+      description: Update the details of a gallery
+      parameters:
+      - description: Gallery ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Gallery update
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/model.GalleryUpdateRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            allOf:
+            - $ref: '#/definitions/model.ResponseHTTP'
+            - properties:
+                data:
+                  $ref: '#/definitions/model.GalleryResponse'
+              type: object
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Update a gallery (strictly for admin)
       tags:
       - gallery
   /api/v1/gallery/{slug}:
