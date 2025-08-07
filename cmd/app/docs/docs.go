@@ -269,7 +269,7 @@ const docTemplate = `{
                 "summary": "Create a new gallery (strictly for admin)",
                 "parameters": [
                     {
-                        "description": "User information",
+                        "description": "Gallery items",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -405,6 +405,70 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/model.ResponseHTTP"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/gallery/{id}/image": {
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Delete a gallery by ID and urls",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "gallery"
+                ],
+                "summary": "Delete a gallery image (strictly for admin)",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Gallery ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "URLs of images to delete",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.GalleryDeleteRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -1562,6 +1626,17 @@ const docTemplate = `{
                 },
                 "phone_number": {
                     "type": "string"
+                }
+            }
+        },
+        "model.GalleryDeleteRequest": {
+            "type": "object",
+            "properties": {
+                "public_urls": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 }
             }
         },

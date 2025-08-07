@@ -3,6 +3,7 @@ module github.com/MogboPython/belvaphilips_backend
 go 1.23.6
 
 require (
+	github.com/cloudinary/cloudinary-go/v2 v2.11.1
 	github.com/go-playground/validator/v10 v10.26.0
 	github.com/gofiber/contrib/jwt v1.0.10
 	github.com/gofiber/contrib/swagger v1.2.0
@@ -23,11 +24,13 @@ require (
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
+	github.com/creasty/defaults v1.7.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-sql-driver/mysql v1.9.2 // indirect
+	github.com/gorilla/schema v1.4.1 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/mattn/go-sqlite3 v1.14.27 // indirect
 	github.com/mfridman/interpolate v0.0.2 // indirect

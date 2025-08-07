@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"mime/multipart"
@@ -8,6 +9,8 @@ import (
 	"strings"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/config"
+	"github.com/cloudinary/cloudinary-go/v2"
+	"github.com/cloudinary/cloudinary-go/v2/api/admin"
 	"github.com/gofiber/fiber/v2/log"
 	"github.com/google/uuid"
 	storage "github.com/supabase-community/storage-go"
@@ -17,6 +20,7 @@ type StorageService interface { //nolint:revive // it works
 	UploadFile(imageFile *multipart.FileHeader, bucketID string, subPath ...string) (string, error)
 	RemoveFile(file string) error
 	RemoveFolder(bucketName, folderPath string) error
+	BulkDeleteCloudAssets(publicIDs []string) error
 }
 
 type storageService struct {
@@ -141,6 +145,59 @@ func (*storageService) RemoveFolder(bucketName, folderPath string) error {
 	}
 
 	log.Infof("Files in %s deleted successfully", folderPath)
+
+	return nil
+}
+
+func getCloudinaryClient() (*cloudinary.Cloudinary, error) {
+	return cloudinary.NewFromParams(
+		config.Config("CLOUDINARY_CLOUD_NAME"),
+		config.Config("CLOUDINARY_API_KEY"),
+		config.Config("CLOUDINARY_API_SECRET"),
+	)
+}
+
+// func deleteCloudImage(publicID string) error {
+// 	cld, err := getCloudinaryClient()
+// 	if err != nil {
+// 		log.Error("Failed to initialize Cloudinary: ", err)
+// 		return errors.New("Failed to initialize Cloudinary")
+// 	}
+
+// 	ctx := context.Background()
+
+// 	resp, err := cld.Upload.Destroy(ctx, uploader.DestroyParams{
+// 		PublicID:     publicID,
+// 		ResourceType: "image",
+// 	})
+// 	if err != nil {
+// 		fmt.Printf("Failed to delete image %s: %v\n", publicID, err)
+// 		return errors.New("failed to delete image")
+// 	}
+
+// 	log.Infof("Image %s deleted successfully.", publicID)
+// 	return nil
+// }
+
+func (*storageService) BulkDeleteCloudAssets(publicIDs []string) error {
+	cld, err := getCloudinaryClient()
+	if err != nil {
+		log.Error("Failed to initialize Cloudinary: ", err)
+		return errors.New("failed to initialize Cloudinary")
+	}
+
+	ctx := context.Background()
+	resp, err := cld.Admin.DeleteAssets(
+		ctx,
+		admin.DeleteAssetsParams{PublicIDs: publicIDs},
+	)
+
+	if err != nil {
+		log.Error("failed to bulk delete assets: ", err)
+		return errors.New("failed to delete images")
+	}
+
+	log.Infof("Deleted assets count: %d", len(resp.Deleted))
 
 	return nil
 }

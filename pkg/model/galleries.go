@@ -27,6 +27,10 @@ type GalleryUpdateRequest struct {
 	Images []string `json:"images" validate:"omitempty"`
 }
 
+type GalleryDeleteRequest struct {
+	PublicIDs []string `json:"public_urls" validate:"omitempty"`
+}
+
 type GalleryResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`

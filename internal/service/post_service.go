@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/MogboPython/belvaphilips_backend/internal/repository"
@@ -28,6 +29,7 @@ type PostService interface {
 	GetGalleryBySlug(slug string) (*model.GalleryResponse, error)
 	UpdateGallery(id string, update *model.GalleryUpdateRequest) (*model.GalleryResponse, error)
 	DeleteGallery(id string) error
+	DeleteCloudImage(id string, publicIDs []string) error
 }
 
 type postService struct {
@@ -285,6 +287,56 @@ func (s *postService) UpdateGallery(id string, update *model.GalleryUpdateReques
 	}
 
 	return mapGalleryToResponse(gallery), nil
+}
+
+// TODO: delete image and remove it from image array in gallery
+
+func (s *postService) DeleteCloudImage(id string, publicIDs []string) error {
+	gallery, err := s.postRepo.GetGalleryByID(id)
+	if err != nil {
+		return fmt.Errorf("failed to find gallery: %w", err)
+	}
+
+	var updatedImages []string
+
+	deletedPublicIDs := make(map[string]bool)
+
+	for _, imageURL := range gallery.Images {
+		shouldKeep := true
+
+		for _, publicID := range publicIDs {
+			if publicID != "" && strings.Contains(imageURL, publicID) {
+				shouldKeep = false
+				deletedPublicIDs[publicID] = true
+
+				break
+			}
+		}
+
+		if shouldKeep {
+			updatedImages = append(updatedImages, imageURL)
+		}
+	}
+
+	if len(updatedImages) == len(gallery.Images) {
+		log.Warnf("No images matched the provided public IDs for gallery %s", id)
+	}
+
+	gallery.Images = updatedImages
+	gallery.UpdatedAt = time.Now()
+
+	if err := s.postRepo.UpdateGallery(gallery); err != nil {
+		log.Error("error saving gallery: ", err)
+		return err
+	}
+
+	if err := s.storageService.BulkDeleteCloudAssets(publicIDs); err != nil {
+		log.Warnf("Failed to delete images for gallery.")
+	}
+
+	log.Infof("successfully removed images for gallery %s", id)
+
+	return nil
 }
 
 func mapGalleryToResponse(gallery *model.Gallery) *model.GalleryResponse {

@@ -6,8 +6,10 @@ import (
 
 	"github.com/MogboPython/belvaphilips_backend/internal/service"
 	"github.com/MogboPython/belvaphilips_backend/pkg/model"
+	"github.com/MogboPython/belvaphilips_backend/pkg/utils"
 	"github.com/MogboPython/belvaphilips_backend/pkg/validator"
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/log"
 	"gorm.io/gorm"
 )
 
@@ -423,7 +425,7 @@ func (h *PostHandler) DeletePost(c *fiber.Ctx) error {
 //
 // @Accept			json
 // @Produce		json
-// @Param			request	body		model.GalleryRequest	true	"User information"
+// @Param			request	body		model.GalleryRequest	true	"Gallery items"
 // @Success		201		{object}	model.ResponseHTTP{data=model.GalleryResponse}
 // @Failure		400		{object}	model.ResponseHTTP{}
 // @Failure		500		{object}	model.ResponseHTTP{}
@@ -544,19 +546,19 @@ func (h *PostHandler) GetAllGalleries(c *fiber.Ctx) error {
 
 // @Summary		Update a gallery (strictly for admin)
 //
-//	@Description	Update the details of a gallery
-//	@Tags			gallery
+// @Description	Update the details of a gallery
+// @Tags			gallery
 //
-//	@Security		BearerAuth
+// @Security		BearerAuth
 //
-//	@Accept			json
-//	@Produce		json
-//	@Param			id		path		string							true	"Gallery ID"
-//	@Param			status	body		model.GalleryUpdateRequest	true	"Gallery update"
-//	@Success		200		{object}	model.ResponseHTTP{data=model.GalleryResponse}
-//	@Failure		404		{object}	model.ResponseHTTP{}
-//	@Failure		500		{object}	model.ResponseHTTP{}
-//	@Router			/api/v1/gallery/{id} [put]
+// @Accept			json
+// @Produce		json
+// @Param			id		path		string						true	"Gallery ID"
+// @Param			status	body		model.GalleryUpdateRequest	true	"Gallery update"
+// @Success		200		{object}	model.ResponseHTTP{data=model.GalleryResponse}
+// @Failure		404		{object}	model.ResponseHTTP{}
+// @Failure		500		{object}	model.ResponseHTTP{}
+// @Router			/api/v1/gallery/{id} [put]
 func (h *PostHandler) UpdateGallery(c *fiber.Ctx) error {
 	id := c.Params("id")
 
@@ -644,6 +646,84 @@ func (h *PostHandler) DeleteGallery(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusNoContent).JSON(model.ResponseHTTP{
 		Success: true,
 		Message: "Successfully deleted gallery",
+		Data:    nil,
+	})
+}
+
+// @Summary		Delete a gallery image (strictly for admin)
+// @Description	Delete a gallery by ID and urls
+// @Tags			gallery
+//
+// @Security		BearerAuth
+//
+// @Accept			json
+// @Produce		json
+// @Param			id		path		string						true	"Gallery ID"
+// @Param			request	body		model.GalleryDeleteRequest	true	"URLs of images to delete"
+// @Success		204		{object}	model.ResponseHTTP{}
+// @Failure		400		{object}	model.ResponseHTTP{}
+// @Failure		404		{object}	model.ResponseHTTP{}
+// @Failure		500		{object}	model.ResponseHTTP{}
+// @Router			/api/v1/gallery/{id}/image [delete]
+func (h *PostHandler) DeleteGalleryImage(c *fiber.Ctx) error {
+	galleryID := c.Params("id")
+	if galleryID == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"error": "Gallery ID is required",
+		})
+	}
+
+	var payload model.GalleryDeleteRequest
+
+	if err := c.BodyParser(&payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	if err := h.validator.Validate(payload); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: err.Error(),
+			Data:    nil,
+		})
+	}
+
+	files := payload.PublicIDs
+	publicIDs := make([]string, 0, len(files))
+
+	for _, pid := range files {
+		extractedID, err := utils.ExtractPublicID(pid)
+		if err != nil {
+			log.Warnf("Failed to extract public ID from %s: %v", pid, err)
+			continue
+		}
+
+		publicIDs = append(publicIDs, extractedID)
+	}
+
+	err := h.postService.DeleteCloudImage(galleryID, publicIDs)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.Status(fiber.StatusNotFound).JSON(model.ResponseHTTP{
+				Success: false,
+				Message: "Gallery not found",
+				Data:    nil,
+			})
+		}
+
+		return c.Status(fiber.StatusInternalServerError).JSON(model.ResponseHTTP{
+			Success: false,
+			Message: "Internal server error",
+			Data:    nil,
+		})
+	}
+
+	return c.Status(fiber.StatusNoContent).JSON(model.ResponseHTTP{
+		Success: true,
+		Message: "Successfully deleted images from gallery",
 		Data:    nil,
 	})
 }

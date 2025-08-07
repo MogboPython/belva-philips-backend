@@ -43,6 +43,13 @@ definitions:
     - name
     - phone_number
     type: object
+  model.GalleryDeleteRequest:
+    properties:
+      public_urls:
+        items:
+          type: string
+        type: array
+    type: object
   model.GalleryRequest:
     properties:
       images:
@@ -423,7 +430,7 @@ paths:
       - application/json
       description: Create a new gallery with the provided information
       parameters:
-      - description: User information
+      - description: Gallery items
         in: body
         name: request
         required: true
@@ -528,6 +535,47 @@ paths:
       security:
       - BearerAuth: []
       summary: Update a gallery (strictly for admin)
+      tags:
+      - gallery
+  /api/v1/gallery/{id}/image:
+    delete:
+      consumes:
+      - application/json
+      description: Delete a gallery by ID and urls
+      parameters:
+      - description: Gallery ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: URLs of images to delete
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/model.GalleryDeleteRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/model.ResponseHTTP'
+      security:
+      - BearerAuth: []
+      summary: Delete a gallery image (strictly for admin)
       tags:
       - gallery
   /api/v1/gallery/{slug}:

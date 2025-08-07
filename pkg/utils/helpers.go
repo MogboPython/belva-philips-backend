@@ -3,6 +3,7 @@ package utils
 import (
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -13,6 +14,7 @@ import (
 const (
 	PAGE  = 1
 	LIMIT = 10
+	REGEX = 2
 )
 
 func GetPageAndLimitInt(pageStr, limitStr string) (offset, limit int) {
@@ -61,4 +63,16 @@ func PublicImageURL(imageName string) string {
 		config.Config("SUPABASE_URL"),
 		imageName,
 	)
+}
+
+func ExtractPublicID(url string) (string, error) {
+	// Regular expression to match the public ID (last segment before the file extension)
+	re := regexp.MustCompile(`/v\d+/([^/]+)\.\w+$`)
+	matches := re.FindStringSubmatch(url)
+
+	if len(matches) < REGEX {
+		return "", fmt.Errorf("could not extract public ID from URL: %s", url)
+	}
+
+	return matches[1], nil
 }
